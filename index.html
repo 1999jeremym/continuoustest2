@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,501 +7,184 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #FAF7F2;
-      --surface: #FFFFFF;
-      --text: #1A1A1A;
-      --text-secondary: #6B6B6B;
-      --border: #E8E0D6;
-      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    html[data-theme="light"] {
+      --bg: #FAF7F2; --surface: #FFFFFF; --text: #1A1A1A; --text-secondary: #6B6B6B;
+      --border: #E8E0D6; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --exp-ok-bg: #E8F5E9; --exp-ok-text: #1B5E20; --exp-no-bg: #FFEBEE; --exp-no-text: #B71C1C;
+      --review-bg: #F5F2ED;
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #141210;
-        --surface: #1E1C19;
-        --text: #F0EDE8;
-        --text-secondary: #9A9590;
-        --border: #2E2B27;
-        --shadow: 0 2px 12px rgba(0,0,0,0.3);
-      }
+    html[data-theme="dark"] {
+      --bg: #141210; --surface: #1E1C19; --text: #F0EDE8; --text-secondary: #9A9590;
+      --border: #2E2B27; --shadow: 0 2px 12px rgba(0,0,0,0.3);
+      --exp-ok-bg: #1B3A1F; --exp-ok-text: #A5D6A7; --exp-no-bg: #3E1A1A; --exp-no-text: #EF9A9A;
+      --review-bg: #252320;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root { min-height: 100vh; }
-    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; transition: background 0.3s, color 0.3s; }
     button { cursor: pointer; border: none; font-family: 'Outfit', sans-serif; background: none; }
     button:disabled { cursor: default; }
-    code { background: var(--border); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+    code { background: var(--border); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: var(--text); }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+const{useState,useEffect,useRef}=React;
 
-    // ═══════════════════════════════════════════════════════════════
-    // DATA SECTION — Edit here to add new topics, notes & questions!
-    // ═══════════════════════════════════════════════════════════════
+const TOPICS=[{id:"blood",title:"Blood",subtitle:"A Specialised Connective Tissue",icon:"🩸",color:"#C62828",accentLight:"#FFCDD2",
+notes:[
+{heading:"Why Blood is a Connective Tissue",
+summary:["Blood originates from mesenchyme (common embryonic origin with other connective tissues).","It contains living cells (formed elements — 45%) and a non-living extracellular fluid matrix called plasma (55%).","Fibres (fibrin) appear only during blood clotting.","Total blood volume: 4–6 litres (≈ 8% of body weight). Slightly alkaline pH of 7.35–7.45."],
+detailed:["Blood is classified as a connective tissue because it shares the same embryonic origin as other connective tissues — they all develop from mesenchyme, which itself derives from the mesoderm germ layer. The four classes of connective tissue that arise from mesenchyme are: connective tissue proper, cartilage, osseous (bone), and blood.","Like all connective tissues, blood has three key components: (1) living cells — called formed elements, making up about 45% of blood volume; (2) a non-living extracellular matrix — which in blood's case is a fluid called plasma, making up about 55%; and (3) fibres — though in blood, fibres (fibrin) only become visible during clotting.","What makes blood unique among connective tissues is that its matrix is liquid rather than solid or gel-like. This allows blood to flow through the cardiovascular system and perform its transport, protection, and regulatory roles.","An average adult has 4–6 litres of blood, which accounts for roughly 8% of their body weight. Blood is a red, sticky, viscous, salty fluid with a salt concentration of about 0.9% sodium chloride. It is slightly alkaline, maintained within the narrow pH range of 7.35–7.45. Deviations outside this range can be life-threatening.","When blood is withdrawn and placed in a centrifuge, it separates into three layers: plasma on top (55%), a thin buffy coat of leukocytes and platelets in the middle (<1%), and erythrocytes at the bottom (45%). The percentage of blood volume occupied by RBCs is known as the haematocrit."]},
+{heading:"Functions of Blood",
+summary:["Transport — carries gases (O₂ & CO₂), nutrients, and wastes.","Protection — defends against infection and blood loss.","Regulation — maintains water content, blood pressure, acid/base balance (pH), and body temperature."],
+detailed:["Blood performs three broad categories of functions: transport, protection, and regulation. Understanding these helps explain why blood disorders can have such widespread effects on the body.","TRANSPORT: Blood is the body's primary transport medium. It carries oxygen from the lungs to every cell and returns carbon dioxide to the lungs for exhalation. It transports nutrients absorbed from the digestive tract (glucose, amino acids, fatty acids, vitamins) to cells for energy and growth. Metabolic wastes — urea, uric acid, creatinine — are carried to the kidneys and liver for excretion. Hormones are also transported via blood to their target organs.","PROTECTION: White blood cells identify and destroy invading pathogens. Plasma proteins called antibodies mark foreign substances for destruction. Platelets and clotting factors prevent blood loss through haemostasis when vessels are damaged.","REGULATION: Blood regulates body temperature by absorbing heat from active areas and redistributing it. It maintains water balance through osmotic pressure exerted by plasma proteins (especially albumin). Blood buffers — albumin, haemoglobin, bicarbonate ions — maintain the critical pH range of 7.35–7.45. Blood pressure is partly regulated by blood volume and vessel constriction/dilation."]},
+{heading:"Plasma",
+summary:["Plasma is 90% water, 8% proteins, and 2% other solutes.","Key proteins: Albumin (60%, osmotic pressure & pH buffer), Globulins (36%, transport & antibodies), Clotting proteins (4%, fibrinogen & prothrombin).","Also carries electrolytes, nutrients, respiratory gases, and nitrogenous waste products."],
+detailed:["Plasma is the straw-coloured, non-living fluid matrix of blood, making up approximately 55% of whole blood volume. It is about 90% water, which serves as a dissolving and suspending medium for blood solutes and absorbs heat.","PLASMA PROTEINS (8%): Mostly produced by the liver. Albumin (about 60%) — the smallest and most abundant plasma protein. Critical for maintaining osmotic pressure, keeping water in blood vessels. Also acts as a pH buffer (absorbing/releasing H⁺ ions) and a transport protein for fatty acids, hormones, and some drugs.","Globulins (about 36%): Alpha and beta globulins (produced by liver) transport lipids, metal ions, and fat-soluble vitamins. Gamma globulins are antibodies (immunoglobulins) produced by plasma cells (activated B-lymphocytes).","Clotting proteins (about 4%) include fibrinogen and prothrombin, both produced by the liver. Fibrinogen is the precursor protein that gets converted into insoluble fibrin threads during clot formation.","OTHER SOLUTES (2%): Electrolytes (sodium, potassium, calcium, chloride, bicarbonate, phosphate), nutrients (glucose, amino acids, fatty acids, vitamins), respiratory gases (O₂ and CO₂), and nitrogenous waste products (urea, uric acid, creatinine, ammonium salts)."]},
+{heading:"Erythrocytes (RBCs)",
+summary:["Biconcave disc shape — increases surface area for gas exchange.","Anucleate — allows more room for haemoglobin (97% of cell). Can't divide, limited lifespan.","No mitochondria — all O₂ is delivered to other cells ('unselfish').","Primary function: transport O₂ and some CO₂.","Haemoglobin: 4 polypeptide chains with iron-containing heme groups.","RBC lifespan ≈ 120 days. Destroyed primarily in the spleen."],
+detailed:["Erythrocytes are the most abundant blood cells (4–6 million/μL). They are highly specialised for transporting oxygen from the lungs to body tissues, and carrying some CO₂ back.","SHAPE: Biconcave discs — thinner in the centre, thicker at edges. This increases surface area-to-volume ratio by ~30% compared to a sphere, allowing more efficient gas exchange. It also makes the cell flexible enough to squeeze through capillaries as small as 3μm (the RBC itself is 7–8μm).","ANUCLEATE: Mature RBCs have no nucleus (ejected during development). This adaptation provides more space for haemoglobin (~97% of dry weight). The trade-off: they cannot repair themselves, produce new proteins, or divide — giving them a limited ~120 day lifespan.","NO MITOCHONDRIA: RBCs generate ATP only through anaerobic glycolysis. Without mitochondria consuming oxygen, none of the carried O₂ is 'used up' for the cell's own energy — all is available for delivery. This is why RBCs are described as 'unselfish'.","HAEMOGLOBIN: Each RBC contains ~250 million haemoglobin molecules. Each has 4 polypeptide chains (2 alpha, 2 beta), each with an iron-containing heme group. Each heme binds one O₂ molecule (4 O₂ per haemoglobin). Oxyhaemoglobin = bright red; deoxyhaemoglobin = dark red. Haemoglobin also transports ~23% of CO₂ (as carbaminohaemoglobin) and acts as a pH buffer.","RBC DESTRUCTION: After ~120 days, old RBCs are destroyed by macrophages, primarily in the spleen (also liver and bone marrow). Haemoglobin breakdown: (1) Iron is salvaged and recycled for new haemoglobin; (2) Globin chains → amino acids returned to body pool; (3) Heme → biliverdin → bilirubin → transported to liver → secreted in bile → excreted in faeces (giving brown colour)."]},
+{heading:"Erythropoiesis",
+summary:["Production of RBCs occurs in red bone marrow.","Triggered by hypoxia → kidneys release EPO → stimulates bone marrow → more RBCs.","Pathway: Hemocytoblast → Proerythroblast → Early erythroblast → Late erythroblast → Normoblast → Reticulocyte → Erythrocyte.","Requires: protein, iron, vitamin B12, and folic acid."],
+detailed:["Erythropoiesis occurs in red bone marrow (flat bones: sternum, ribs, pelvis, vertebrae). The body produces ~2 million new RBCs every second to replace those being destroyed.","THE TRIGGER — HYPOXIA: Controlled by negative feedback. When kidneys detect low blood O₂ (from decreased RBC count, decreased O₂ availability, or increased tissue demand), they release erythropoietin (EPO). EPO stimulates bone marrow stem cells to increase RBC production. As O₂ delivery improves, EPO release slows down — completing the feedback loop.","DEVELOPMENTAL PATHWAY (5–7 days): Phase 1 — Ribosome synthesis: Hemocytoblast → Proerythroblast → Early erythroblast (ribosomes needed for haemoglobin protein synthesis). Phase 2 — Haemoglobin accumulation: → Late erythroblast → Normoblast (cell shrinks, colour shifts blue → red). Phase 3 — Nucleus ejection: → Reticulocyte (still has some ribosomes, lost within 1–2 days) → mature Erythrocyte.","NUTRITIONAL REQUIREMENTS: Iron — essential for heme groups. Sources: red meat, liver, beans, leafy greens. Absorbed in duodenum, transported by transferrin. Vitamin B12 and folic acid — needed for DNA synthesis during rapid cell division. B12 deficiency or folate deficiency → large, immature RBCs (megaloblastic anaemia). B12 absorption requires intrinsic factor from the stomach. Protein — needed for globin chain synthesis."]},
+{heading:"Anaemia",
+summary:["Caused by lack of RBCs or decreased quality/quantity of haemoglobin.","Causes: altered erythropoiesis, blood loss, inadequate iron, increased RBC destruction.","Symptoms: fatigue, breathlessness, pallor, increased heart rate.","Reduced blood volume → faster flow → cardiovascular strain."],
+detailed:["Anaemia = deficiency in RBC number or decreased haemoglobin quality/quantity → reduced O₂-carrying capacity → tissue hypoxia.","CAUSES: (1) Altered erythropoiesis — nutritional deficiencies (iron-deficiency anaemia most common worldwide; B12/folate → megaloblastic anaemia), chronic kidney disease (reduced EPO), bone marrow disorders (aplastic anaemia, leukaemia). (2) Blood loss — acute (trauma, surgery) or chronic (heavy menstruation, GI bleeding). Chronic loss depletes iron stores. (3) Increased RBC destruction (haemolytic anaemias) — sickle cell disease, malaria, autoimmune disorders, transfusion reactions.","SYMPTOMS: Fatigue and low energy (insufficient O₂ for muscle ATP production), breathlessness (compensatory increased respiration), pallor (reduced haemoglobin = less red colour in skin/nail beds/mucous membranes), dizziness (brain sensitive to O₂ deprivation).","CARDIOVASCULAR EFFECTS: Reduced RBC volume → 'thinner' blood → flows faster → heart compensates with tachycardia (faster beating) → over time → cardiac strain, cardiomegaly, potential heart failure. Chronic anaemia is a systemic condition, not just a 'blood problem'."]},
+{heading:"Leukocytes (WBCs)",
+summary:["Nucleated cells, <1% of blood volume. Crucial to immunity.","Granulocytes: Neutrophils (50–70%), Eosinophils (2–4%), Basophils (0.5–1%).","Agranulocytes: Lymphocytes (25–45%), Monocytes (3–8%).","Properties: phagocytosis, amoeboid movement, diapedesis, chemotaxis."],
+detailed:["Leukocytes are complete cells with nuclei and organelles. <1% of blood volume (4,800–10,800/μL). Divided into granulocytes (visible cytoplasmic granules, lobed nuclei) and agranulocytes.","NEUTROPHILS (50–70%): Most abundant WBC. First responders to bacterial infection. Powerful phagocytes that engulf and digest bacteria. Short-lived (6 hours to days). Main component of pus. High count (neutrophilia) = bacterial infection.","EOSINOPHILS (2–4%): Red-staining granules, bilobed nucleus. Combat parasitic infections by releasing toxic enzymes onto parasite surfaces. Also modulate allergic reactions by inactivating inflammatory chemicals. Elevated count (eosinophilia) = parasites or allergy.","BASOPHILS (0.5–1%): Rarest WBC. Blue-purple granules. Release histamine (promotes inflammation/vasodilation) and heparin (anticoagulant). Central role in allergic/hypersensitivity reactions. When allergens bind to antibodies on basophil surfaces → degranulation → histamine release → allergic symptoms. This is why antihistamines work.","LYMPHOCYTES (25–45%): Cornerstone of adaptive immunity. T-cells = direct cell attack. B-cells → plasma cells = antibody production. NK cells = destroy virus-infected and cancer cells. Can live years/decades (memory cells) providing long-term immunity.","MONOCYTES (3–8%): Largest WBCs. Circulate 1–2 days, then migrate to tissues → become macrophages (powerful phagocytes). Also activate adaptive immunity by presenting antigens to T-cells.","SPECIAL PROPERTIES: (1) Phagocytosis — engulfing/digesting particles. (2) Amoeboid movement — extend pseudopods to crawl through tissues. (3) Diapedesis — squeeze between capillary wall cells to enter tissues. (4) Chemotaxis — follow chemical signals (cytokines, complement) toward infection/injury sites."]},
+{heading:"Thrombocytes (Platelets)",
+summary:["Very small cell fragments (not true cells).","Contain chemicals involved in blood clotting.","Pathway: Hemocytoblast → Megakaryoblast → Promegakaryocyte → Megakaryocyte → Platelets."],
+detailed:["Platelets are not true cells but cytoplasmic fragments from megakaryocytes in bone marrow. Only 2–4 μm diameter — smallest formed elements. Essential for haemostasis. Count: 150,000–400,000/μL. Lifespan: 5–10 days.","Platelets lack a nucleus but contain granules with: serotonin and thromboxane A2 (promote vasoconstriction), ADP and calcium ions (activate other platelets and clotting cascade), platelet-derived growth factor (PDGF — stimulates tissue repair).","THROMBOPOIESIS: Hemocytoblast → Megakaryoblast → Promegakaryocyte → Megakaryocyte. The megakaryocyte is a giant cell with a massive multi-lobed nucleus (repeated DNA replication without cell division). It extends cytoplasmic processes into blood sinusoids and thousands of platelet fragments break off. One megakaryocyte produces 2,000–3,000 platelets.","ACTIVATION: When vessels are damaged, platelets become activated — changing from smooth discs to spiky spheres. They become sticky, adhere to exposed collagen in vessel walls, release granule contents to recruit more platelets → forming a platelet plug (stage 2 of haemostasis)."]},
+{heading:"Haemostasis (Prevention of Blood Loss)",
+summary:["Stage 1 — Vascular spasm (vasoconstriction): vessel constricts.","Stage 2 — Platelet plug formation: platelets aggregate at injury.","Stage 3 — Coagulation: fibrinogen → fibrin clot mesh.","Stage 4 — Clot retraction: clot tightens, pulls wound edges.","Stage 5 — Fibrinolysis: clot dissolved once healed."],
+detailed:["Haemostasis = 'stopping of blood'. Five overlapping stages. Note: haemostasis (stopping bleeding) ≠ homeostasis (maintaining stable internal conditions).","STAGE 1 — VASCULAR SPASM: Immediate response. Smooth muscle in vessel wall contracts (vasoconstriction) → narrowed vessel → reduced blood flow (up to 90% reduction). Triggered by: direct smooth muscle injury, platelet chemicals, and pain receptor reflexes. Temporary — buys time for next stages.","STAGE 2 — PLATELET PLUG: Broken endothelium exposes underlying collagen → platelets adhere (platelet adhesion) → become activated (shape change) → release chemicals (ADP, thromboxane A2, serotonin) → attract and activate more platelets (platelet aggregation) → growing platelet plug blocks the break. Sufficient alone for small injuries.","STAGE 3 — COAGULATION: For larger injuries. Complex cascade of 30+ clotting factors (mostly liver-produced proteins, many requiring vitamin K). Cascade converts soluble fibrinogen → insoluble fibrin threads. Fibrin weaves through platelet plug, trapping RBCs and platelets → solid clot. Initiated via intrinsic and extrinsic pathways converging on a common pathway.","STAGE 4 — CLOT RETRACTION: Platelets within the clot contract (using actin/myosin), pulling fibrin threads tighter → draws vessel edges closer → stabilises clot. Serum (plasma minus clotting factors) is squeezed out.","STAGE 5 — FIBRINOLYSIS: Once vessel is repaired, plasmin (from plasminogen trapped in clot) gradually breaks down fibrin mesh → dissolves clot. Prevents permanent obstructions. Disorders of fibrinolysis → thrombosis (excessive clotting) or abnormal bleeding."]},
+{heading:"Blood Groups & Transfusions",
+summary:["ABO system: Type A (A antigens, anti-B), Type B (B antigens, anti-A), Type AB (both, no antibodies — universal recipient), Type O (none, both antibodies — universal donor).","Rhesus factor: Rh+ or Rh–. Universal donor = O–. Universal recipient = AB+.","Transfusion reactions: agglutination → clogged vessels → haemolysis → renal failure → death.","Rh incompatibility: Rh– mother + Rh+ baby → anti-Rh antibodies → haemolytic disease in future pregnancies."],
+detailed:["Blood groups are based on antigens (glycoproteins/glycolipids) on RBC surfaces. Over 30 systems exist; the two most clinically important are ABO and Rhesus (Rh).","ABO SYSTEM: Type A = A antigens, anti-B antibodies. Type B = B antigens, anti-A antibodies. Type AB = both antigens, NO antibodies → universal recipient. Type O = NO antigens, BOTH antibodies → universal donor.","RHESUS (Rh) SYSTEM: Based on Rh D antigen presence (+) or absence (–). ~85% of people are Rh+. Unlike ABO, anti-Rh antibodies only develop after exposure to Rh+ blood (not naturally present). Combined with ABO → 8 blood types. True universal donor = O– (no antigens). True universal recipient = AB+ (all antigens, no antibodies).","TRANSFUSION REACTIONS: Incompatible blood → recipient's antibodies attack donor RBCs → agglutination (clumping) → blocked small vessels → haemolysis (RBC rupture) → free haemoglobin released → can clog kidneys → acute renal failure. Also: reduced O₂ capacity, inflammatory response, disseminated intravascular coagulation (DIC), shock, death. This is why blood typing and cross-matching are essential before every transfusion.","Rh INCOMPATIBILITY IN PREGNANCY: Rh– mother + Rh+ foetus (from Rh+ father). During delivery, foetal Rh+ cells may enter mother's blood → her immune system produces anti-Rh antibodies (sensitisation). First pregnancy usually unaffected. Subsequent Rh+ pregnancies → maternal IgG anti-Rh antibodies cross placenta → attack baby's RBCs → haemolytic disease of foetus and newborn (HDFN): mild jaundice to severe anaemia, heart failure, death. Prevention: RhoGAM (anti-D immunoglobulin) given at 28 weeks and within 72 hours of delivery — destroys foetal Rh+ cells before mother's immune system responds."]}
+],
+flashcards:[
+{front:"What type of tissue is blood?",back:"A specialised connective tissue — originates from mesenchyme, has living cells, non-living matrix (plasma), and fibres (fibrin during clotting)."},
+{front:"What percentage of blood is plasma vs formed elements?",back:"Plasma = 55%, Formed elements (cells) = 45%."},
+{front:"What is the pH range of blood?",back:"7.35 – 7.45 (slightly alkaline)."},
+{front:"What are the 3 main functions of blood?",back:"1. Transport (gases, nutrients, wastes)\n2. Protection (infection, blood loss)\n3. Regulation (water, BP, pH, temperature)"},
+{front:"What is plasma made of?",back:"90% water, 8% proteins (albumin, globulins, fibrinogen), 2% other solutes."},
+{front:"What does albumin do?",back:"Maintains osmotic pressure and acts as a pH buffer — absorbing or releasing H⁺ ions."},
+{front:"What is fibrinogen?",back:"A soluble plasma protein converted into insoluble fibrin threads during coagulation. Precursor to clot fibres."},
+{front:"What shape are erythrocytes and why?",back:"Biconcave discs — increases surface area for efficient gas exchange."},
+{front:"Why are RBCs anucleate?",back:"More room for haemoglobin → maximises O₂ carrying capacity. Can't divide → limited lifespan."},
+{front:"Why are RBCs 'unselfish'?",back:"No mitochondria → can't use O₂ for own respiration. All carried O₂ goes to other body cells."},
+{front:"Structure of haemoglobin?",back:"4 polypeptide chains (2α, 2β), each with iron-containing heme group. Each heme binds 1 O₂ (4 total)."},
+{front:"RBC lifespan and where destroyed?",back:"~120 days. Macrophages in spleen (also liver, bone marrow). Iron recycled, globin → amino acids, haem → bilirubin → bile."},
+{front:"What triggers erythropoiesis?",back:"Hypoxia → kidneys release EPO → stimulates red bone marrow → more RBCs."},
+{front:"Nutrients needed for erythropoiesis?",back:"Protein, iron, vitamin B12, and folic acid."},
+{front:"RBC developmental pathway?",back:"Hemocytoblast → Proerythroblast → Early erythroblast → Late erythroblast → Normoblast → Reticulocyte → Erythrocyte"},
+{front:"Causes of anaemia?",back:"Lack of RBCs or decreased haemoglobin. Causes: altered erythropoiesis, blood loss, inadequate iron, increased RBC destruction."},
+{front:"Symptoms of anaemia?",back:"Fatigue, breathlessness, pallor, increased heart rate. Cardiovascular strain over time."},
+{front:"Two main leukocyte groups?",back:"Granulocytes (neutrophils, eosinophils, basophils) and Agranulocytes (lymphocytes, monocytes)."},
+{front:"Neutrophils — % and function?",back:"50–70%. Phagocytise bacteria. Most abundant WBC."},
+{front:"Eosinophils — % and function?",back:"2–4%. Kill parasitic worms, inactivate inflammatory chemicals of allergy."},
+{front:"Basophils — % and function?",back:"0.5–1%. Release histamine + inflammation mediators. Contain heparin. Allergic reactions."},
+{front:"Lymphocytes — % and function?",back:"25–45%. Immune response: T-cells (direct attack), B-cells → plasma cells (antibodies), NK cells."},
+{front:"Monocytes — % and function?",back:"3–8%. Phagocytosis. Become macrophages in tissues."},
+{front:"4 special WBC properties?",back:"1. Phagocytosis\n2. Amoeboid movement\n3. Diapedesis (leave capillaries)\n4. Chemotaxis (follow chemical trails)"},
+{front:"What are thrombocytes?",back:"Platelets — small cell fragments containing chemicals for blood clotting."},
+{front:"5 stages of haemostasis?",back:"1. Vascular spasm\n2. Platelet plug formation\n3. Coagulation\n4. Clot retraction\n5. Fibrinolysis"},
+{front:"First stage of haemostasis?",back:"Vascular spasm — vasoconstriction reduces blood flow to damaged area."},
+{front:"ABO blood types?",back:"A: A antigens, anti-B antibodies\nB: B antigens, anti-A antibodies\nAB: both antigens, NO antibodies\nO: NO antigens, both antibodies"},
+{front:"Universal donor and why?",back:"O– — no A, B, or Rh antigens. Won't trigger reactions in any recipient."},
+{front:"Universal recipient and why?",back:"AB+ — all antigens, no ABO antibodies. Won't attack any donated blood."},
+{front:"Transfusion reaction?",back:"Incompatible blood → agglutination → clogged vessels → haemolysis → free Hb → renal failure → death."},
+{front:"Rh incompatibility in pregnancy?",back:"Rh– mother + Rh+ baby → mother makes anti-Rh antibodies → attacks future Rh+ babies (HDFN). Prevented with RhoGAM."},
+{front:"Where are blood cells produced?",back:"Red bone marrow (haematopoiesis)."},
+{front:"What carries dissolved nutrients, gases, waste?",back:"Plasma — the non-living fluid matrix of blood."},
+{front:"Which cells produce antibodies?",back:"Lymphocytes (B-cells → plasma cells)."},
+{front:"Total blood volume?",back:"4–6 litres (~8% of body weight)."}
+],
+questions:[
+{q:"One regulatory function of blood is to",options:["take oxygen to cells","maintain blood pH","to take urea to the liver","reduce infections"],answer:1,explanation:"Maintaining blood pH is a regulatory function. Transporting O₂/urea = transport. Reducing infections = protection."},
+{q:"The term thrombocyte refers to",options:["red blood cells","proteins in the plasma","white blood cells","platelets"],answer:3,explanation:"Thrombocytes are platelets — small cell fragments for blood clotting."},
+{q:"The precursor to clotting fibres is a protein called",options:["fibroblast","collagen","fibrinogen","fibrin"],answer:2,explanation:"Fibrinogen is the soluble precursor converted into insoluble fibrin during coagulation."},
+{q:"What is the primary function of the erythrocyte?",options:["haemostasis","transporting oxygen","making antibodies","fighting infection"],answer:1,explanation:"Erythrocytes transport oxygen (and some CO₂) via haemoglobin."},
+{q:"Where are blood cells produced?",options:["the liver","the kidney","in bone marrow","the heart"],answer:2,explanation:"All blood cells are produced in red bone marrow (haematopoiesis)."},
+{q:"Which structure contains dissolved useful or waste substances?",options:["WBC","plasma","thrombocytes","RBC"],answer:1,explanation:"Plasma carries dissolved nutrients, electrolytes, gases, and waste products."},
+{q:"How long do RBCs last and where are they broken down?",options:["30 days, kidney","120 days, spleen","120 days, kidney","30 days, spleen"],answer:1,explanation:"RBCs live ~120 days and are broken down primarily in the spleen."},
+{q:"Tamāra has tapeworm. A blood test would show increased",options:["Eosinophils","platelets","Neutrophils","Basophils"],answer:0,explanation:"Eosinophils combat parasitic infections like tapeworm."},
+{q:"Samuel takes antihistamines for allergy. Which cells increased?",options:["Phagocytes","Basophils","Philrodpot","Neutrophils"],answer:1,explanation:"Basophils release histamine during allergic reactions. Antihistamines counteract this."},
+{q:"The first stage of haemostasis is",options:["coagulation","vasopressin","vasodilation","vasoconstriction"],answer:3,explanation:"Vascular spasm (vasoconstriction) is stage 1 — the vessel constricts to reduce blood flow."},
+{q:"Why are RBCs considered 'unselfish'?",options:["They reproduce to share O₂ transport.","They consume O₂ only for themselves.","They donate haemoglobin to WBCs.","They lack mitochondria so all O₂ goes to other cells."],answer:3,explanation:"No mitochondria = can't use O₂ themselves. All carried O₂ is delivered to other cells."},
+{q:"Which blood group is the universal donor?",options:["AB","O+","O-","AB+"],answer:2,explanation:"O– has no A, B, or Rh antigens — safe for any recipient."},
+{q:"Which blood group is the most 'selfish'?",options:["AB+","O+","A","AB-"],answer:0,explanation:"AB+ receives from anyone (universal recipient) but can only donate to AB+."},
+{q:"Why do mature RBCs lack a nucleus?",options:["To increase energy production","To allow more haemoglobin storage","To prevent dividing","To make them more rigid"],answer:1,explanation:"No nucleus = more space for haemoglobin = maximum O₂-carrying capacity."},
+{q:"What triggers erythropoiesis?",options:["High blood O₂","High platelets","Increased WBC count","Low tissue O₂ levels"],answer:3,explanation:"Hypoxia → kidneys release EPO → stimulates bone marrow → more RBCs."},
+{q:"Albumin helps homeostasis by acting as",options:["an infection fighter","an eosinophil promoter","an oxygen transporter","a chemical sponge for H⁺ to maintain pH"],answer:3,explanation:"Albumin buffers pH by absorbing or releasing hydrogen ions."},
+{q:"Blood pH range is",options:["7.3–7.4","6.35–7.35","7.35–7.45","6.9–7.1"],answer:2,explanation:"Blood pH is maintained at 7.35–7.45. Deviations are life-threatening."},
+{q:"Cells that produce and release antibodies are",options:["Neutrophils","lymphocytes","thrombocytes","phagocytes"],answer:1,explanation:"Lymphocytes (B-cells → plasma cells) produce antibodies."},
+{q:"Harley (Rh+) and Quinn (Rh–) want children. What complication?",options:["Unrelated genetic condition.","Child inherits Rh–, no complications.","Child may inherit Rh+, causing Rh incompatibility.","No Rh-related complications."],answer:2,explanation:"Rh+ child in Rh– mother → mother may produce anti-Rh antibodies → haemolytic disease in future pregnancies."},
+{q:"Manu (type A) needs blood. Sister Jemima (type B) wants to donate.",options:["Manu can only receive from AB.","Safe because they're siblings.","Incompatible blood types — cannot donate.","Only if Rh factors match."],answer:2,explanation:"Type A has anti-B antibodies. Receiving type B → agglutination. Family relation is irrelevant."}
+]}];
 
-    const TOPICS = [
-      {
-        id: "blood",
-        title: "Blood",
-        subtitle: "A Specialised Connective Tissue",
-        icon: "🩸",
-        color: "#C62828",
-        accentLight: "#FFCDD2",
-        notes: [
-          {
-            heading: "Why Blood is a Connective Tissue",
-            content: [
-              "Blood originates from mesenchyme (common embryonic origin with other connective tissues).",
-              "It contains living cells (formed elements — 45% of volume) and a non-living extracellular fluid matrix called plasma (55%).",
-              "Fibres (fibrin) appear only during blood clotting.",
-              "Total blood volume: 4–6 litres (≈ 8% of body weight). It is a red, sticky, viscous, salty fluid (0.9% NaCl) and is slightly alkaline with a pH of 7.35–7.45."
-            ]
-          },
-          {
-            heading: "Functions of Blood",
-            content: [
-              "Transport — carries gases (O₂ & CO₂), nutrients, and wastes.",
-              "Protection — defends against infection and blood loss.",
-              "Regulation — maintains water content, blood pressure, acid/base balance (pH), and body temperature."
-            ]
-          },
-          {
-            heading: "Plasma",
-            content: [
-              "Plasma is 90% water, 8% proteins, and 2% other solutes.",
-              "Key plasma proteins: Albumin (60% of plasma proteins, produced by liver — maintains osmotic pressure and acts as a chemical buffer for pH), Globulins (36% — alpha/beta transport lipids & vitamins; gamma = antibodies), Clotting proteins (4% — fibrinogen & prothrombin, produced by liver).",
-              "Plasma also carries electrolytes, nutrients, respiratory gases, and nitrogenous waste products (urea, uric acid, creatinine)."
-            ]
-          },
-          {
-            heading: "Erythrocytes (RBCs)",
-            content: [
-              "Biconcave disc shape — increases surface area for gas exchange.",
-              "Anucleate (no nucleus) — allows more room for haemoglobin (97% of cell content). This also means they cannot divide and have a limited lifespan.",
-              "No mitochondria — this ensures all carried oxygen is delivered to other body cells rather than being consumed by the RBC itself. This is why RBCs are considered 'unselfish'.",
-              "Primary function: transport oxygen (and some CO₂).",
-              "Haemoglobin structure: 4 polypeptide chains (2 alpha, 2 beta), each with an iron-containing heme group that binds O₂.",
-              "RBC lifespan: approximately 120 days. They are destroyed by macrophages primarily in the spleen (also liver and bone marrow). Iron is recycled, globin → amino acids, haem → bilirubin (excreted in bile)."
-            ]
-          },
-          {
-            heading: "Erythropoiesis",
-            content: [
-              "Production of RBCs occurs in red bone marrow.",
-              "Triggered by hypoxia (low oxygen levels in tissues) — kidneys release erythropoietin (EPO) → stimulates red bone marrow → increased RBC production → improved O₂ carrying capacity.",
-              "Developmental pathway: Hemocytoblast → Proerythroblast → Early erythroblast (ribosome synthesis) → Late erythroblast (haemoglobin accumulation) → Normoblast → Reticulocyte (nucleus ejected) → mature Erythrocyte.",
-              "Requires: protein, iron, vitamin B12, and folic acid."
-            ]
-          },
-          {
-            heading: "Anaemia",
-            content: [
-              "Caused by lack of RBCs or decreased quality/quantity of haemoglobin.",
-              "Can result from: altered erythropoiesis, blood loss, inadequate dietary iron, or increased RBC destruction.",
-              "Results in reduced O₂ carrying capacity. Symptoms: fatigue, lack of energy, breathlessness, pallor.",
-              "Reduced RBC volume → 'thinner' blood flows faster → increased heart rate → potential cardiovascular disorders."
-            ]
-          },
-          {
-            heading: "Leukocytes (WBCs)",
-            content: [
-              "Contain nuclei and usual organelles. Less than 1% of blood volume. Crucial to immunity.",
-              "GRANULOCYTES: Neutrophils (50–70%) — phagocytise bacteria; Eosinophils (2–4%) — kill parasitic worms & inactivate some inflammatory chemicals; Basophils (0.5–1%) — release histamine & other inflammation mediators, contain heparin.",
-              "AGRANULOCYTES: Lymphocytes (25–45%) — mount immune response via direct cell attack or antibodies (some become plasma cells that produce antibodies); Monocytes (3–8%) — phagocytosis, develop into macrophages in tissues.",
-              "Special WBC properties: phagocytosis (cell eating), amoeboid movement, diapedesis (leave capillaries), chemotaxis (follow chemical trails)."
-            ]
-          },
-          {
-            heading: "Thrombocytes (Platelets)",
-            content: [
-              "Very small cell fragments (not true cells).",
-              "Contain chemicals involved in blood clotting.",
-              "Developmental pathway: Hemocytoblast → Megakaryoblast → Promegakaryocyte → Megakaryocyte → Platelets (fragment off)."
-            ]
-          },
-          {
-            heading: "Haemostasis (Prevention of Blood Loss)",
-            content: [
-              "Stage 1 — Vascular spasm (vasoconstriction): damaged blood vessel constricts to reduce blood flow.",
-              "Stage 2 — Platelet plug formation: platelets stick to damaged area and aggregate.",
-              "Stage 3 — Coagulation (blood clotting): clotting cascade converts fibrinogen (soluble plasma protein) → fibrin (insoluble threads that form the clot mesh).",
-              "Stage 4 — Clot retraction: clot tightens and pulls wound edges together.",
-              "Stage 5 — Fibrinolysis: clot is gradually dissolved once healing is complete."
-            ]
-          },
-          {
-            heading: "Blood Groups & Transfusions",
-            content: [
-              "ABO system based on antigens on RBC surfaces: Type A (A antigens, anti-B antibodies), Type B (B antigens, anti-A antibodies), Type AB (both antigens, no antibodies — universal recipient), Type O (no antigens, both antibodies — universal donor).",
-              "Rhesus factor: Rh+ (has D antigen) or Rh– (lacks D antigen).",
-              "Universal donor = O– (no antigens at all). Universal recipient = AB+ (has all antigens, no antibodies).",
-              "Transfusion reactions: incompatible blood → agglutination (clumping) → clogged vessels → ruptured RBCs → haemoglobin released → reduced O₂ capacity, potential renal failure and death.",
-              "Rh incompatibility: If an Rh– mother carries an Rh+ baby, her body may produce anti-Rh antibodies that can attack future Rh+ pregnancies."
-            ]
-          }
-        ],
-        flashcards: [
-          { front: "What type of tissue is blood?", back: "A specialised connective tissue — it originates from mesenchyme, has living cells, non-living matrix (plasma), and fibres (fibrin during clotting)." },
-          { front: "What percentage of blood is plasma vs formed elements?", back: "Plasma = 55%, Formed elements (cells) = 45%." },
-          { front: "What is the pH range of blood?", back: "7.35 – 7.45 (slightly alkaline)." },
-          { front: "What are the 3 main functions of blood?", back: "1. Transport (gases, nutrients, wastes)\n2. Protection (infection, blood loss)\n3. Regulation (water, BP, pH, temperature)" },
-          { front: "What is plasma made of?", back: "90% water, 8% proteins (albumin, globulins, fibrinogen), 2% other solutes (nutrients, electrolytes, gases)." },
-          { front: "What does albumin do?", back: "Maintains osmotic pressure (water balance between blood and tissues) and acts as a pH buffer — absorbing or releasing H⁺ ions." },
-          { front: "What is fibrinogen?", back: "A soluble plasma protein (clotting protein) that is converted into insoluble fibrin threads during coagulation. It is the precursor to the fibres in a blood clot." },
-          { front: "What shape are erythrocytes and why?", back: "Biconcave discs — this shape increases surface area for efficient gas exchange." },
-          { front: "Why are RBCs anucleate (no nucleus)?", back: "To make more room for haemoglobin, maximising oxygen-carrying capacity. It also means they can't divide and have a limited lifespan." },
-          { front: "Why are RBCs considered 'unselfish'?", back: "They lack mitochondria, so they can't use oxygen for their own aerobic respiration. All carried O₂ is delivered to other body cells." },
-          { front: "What is the structure of haemoglobin?", back: "4 polypeptide chains (2 alpha, 2 beta), each with an iron-containing heme group. Each heme group can bind one O₂ molecule (4 total per haemoglobin)." },
-          { front: "How long do RBCs live and where are they destroyed?", back: "~120 days. Destroyed by macrophages primarily in the spleen (also liver and bone marrow). Iron recycled, globin → amino acids, haem → bilirubin → excreted in bile." },
-          { front: "What triggers erythropoiesis?", back: "Hypoxia (low tissue O₂ levels) → kidneys release erythropoietin (EPO) → stimulates red bone marrow → more RBCs produced." },
-          { front: "What nutrients does erythropoiesis require?", back: "Protein, iron, vitamin B12, and folic acid." },
-          { front: "RBC developmental pathway (erythropoiesis)", back: "Hemocytoblast → Proerythroblast → Early erythroblast → Late erythroblast → Normoblast → Reticulocyte → Erythrocyte" },
-          { front: "What causes anaemia?", back: "Lack of RBCs or decreased quality/quantity of haemoglobin. Causes: altered erythropoiesis, blood loss, inadequate iron intake, or increased RBC destruction." },
-          { front: "What are the symptoms of anaemia?", back: "Fatigue, lack of energy, breathlessness, pallor. Reduced blood volume → faster blood flow → increased heart rate → potential cardiovascular problems." },
-          { front: "What are the two main groups of leukocytes?", back: "Granulocytes (neutrophils, eosinophils, basophils) and Agranulocytes (lymphocytes, monocytes)." },
-          { front: "Neutrophils — what % and what do they do?", back: "50–70% of WBCs. They phagocytise (eat) bacteria. Most abundant WBC." },
-          { front: "Eosinophils — what % and what do they do?", back: "2–4% of WBCs. Kill parasitic worms and inactivate some inflammatory chemicals of allergy." },
-          { front: "Basophils — what % and what do they do?", back: "0.5–1% of WBCs. Release histamine and other inflammation mediators. Contain heparin (anticoagulant). Involved in allergic reactions." },
-          { front: "Lymphocytes — what % and what do they do?", back: "25–45% of WBCs. Mount immune response by direct cell attack or via antibodies. Some become plasma cells that produce and release antibodies." },
-          { front: "Monocytes — what % and what do they do?", back: "3–8% of WBCs. Phagocytosis. Develop into macrophages when they enter tissues." },
-          { front: "Name 4 special properties of leukocytes", back: "1. Phagocytosis (cell eating)\n2. Amoeboid movement (crawl along tissues)\n3. Diapedesis (leave capillaries)\n4. Chemotaxis (follow chemical trails from damaged cells)" },
-          { front: "What are thrombocytes?", back: "Platelets — very small cell fragments (not true cells) that contain chemicals involved in blood clotting." },
-          { front: "What are the 5 stages of haemostasis?", back: "1. Vascular spasm (vasoconstriction)\n2. Platelet plug formation\n3. Coagulation (blood clotting)\n4. Clot retraction\n5. Fibrinolysis" },
-          { front: "What is the first stage of haemostasis?", back: "Vascular spasm — the damaged blood vessel constricts (vasoconstriction) to reduce blood flow and limit blood loss." },
-          { front: "ABO blood types: antigens and antibodies", back: "Type A: A antigens, anti-B antibodies\nType B: B antigens, anti-A antibodies\nType AB: both antigens, NO antibodies\nType O: NO antigens, both antibodies" },
-          { front: "Which blood type is the universal donor and why?", back: "O– (O negative). It has no A, B, or Rh antigens on RBC surfaces, so it won't trigger a transfusion reaction in any recipient." },
-          { front: "Which blood type is the universal recipient and why?", back: "AB+ — has all antigens (A, B, and Rh) and no ABO antibodies, so it won't attack any donated blood type." },
-          { front: "What happens in a transfusion reaction?", back: "Incompatible blood → agglutination (clumping) → clogged small vessels → ruptured RBCs → haemoglobin released → reduced O₂ capacity → potential renal failure and death." },
-          { front: "What is Rh incompatibility in pregnancy?", back: "If an Rh– mother carries an Rh+ baby, her immune system may produce anti-Rh antibodies. These can cross the placenta and attack RBCs in future Rh+ pregnancies (haemolytic disease of the newborn)." },
-          { front: "Where are all blood cells produced?", back: "In red bone marrow (haematopoiesis)." },
-          { front: "Which blood component carries dissolved nutrients, gases, and waste?", back: "Plasma — the non-living fluid matrix of blood." },
-          { front: "Which cells produce and release antibodies?", back: "Lymphocytes (specifically B-lymphocytes that differentiate into plasma cells)." },
-          { front: "What is the total volume of blood in the body?", back: "4–6 litres (approximately 8% of body weight)." },
-        ],
-        questions: [
-          { q: "One regulatory function of blood is to", options: ["take oxygen to cells", "maintain blood pH", "to take urea to the liver", "reduce infections"], answer: 1, explanation: "Regulation is one of blood's three main functions. Maintaining blood pH (acid/base balance) is a regulatory function. Transporting O₂ and urea are transport functions, and reducing infections is a protective function." },
-          { q: "The term thrombocyte refers to", options: ["red blood cells", "proteins in the plasma", "white blood cells", "platelets"], answer: 3, explanation: "Thrombocytes are platelets — small cell fragments involved in blood clotting." },
-          { q: "Blood is a connective tissue. All connective tissues have fibres. The precursor to the formation of fibres that support blood clotting is a protein called", options: ["fibroblast", "collagen", "fibrinogen", "fibrin"], answer: 2, explanation: "Fibrinogen is a soluble plasma protein that is converted into insoluble fibrin threads during coagulation. It is the precursor. Fibrin is the final product, not the precursor." },
-          { q: "What is the primary function of the erythrocyte?", options: ["haemostasis", "transporting oxygen", "making antibodies", "fighting infection"], answer: 1, explanation: "Erythrocytes (RBCs) are highly specialised for transporting oxygen (and some CO₂) via haemoglobin." },
-          { q: "Where are blood cells produced?", options: ["the liver", "the kidney", "in bone marrow", "the heart"], answer: 2, explanation: "All blood cells are produced in red bone marrow through a process called haematopoiesis." },
-          { q: "Which structure contains dissolved substances that can be useful or waste?", options: ["WBC", "plasma", "thrombocytes", "RBC"], answer: 1, explanation: "Plasma is the liquid matrix of blood that carries dissolved nutrients, electrolytes, gases, and waste products like urea." },
-          { q: "How long do RBC last and where are they broken down primarily?", options: ["30 days, kidney", "120 days, spleen", "120 days, kidney", "30 days, spleen"], answer: 1, explanation: "RBCs have a lifespan of approximately 120 days and are primarily broken down by macrophages in the spleen (also liver and bone marrow)." },
-          { q: "Tamāra has been infected with tapeworm! If we had a blood test we would see an increase in", options: ["Eosinophils", "platelets", "Neutrophils", "Basophils"], answer: 0, explanation: "Eosinophils are the WBCs that respond to parasitic infections like tapeworm. They kill parasitic worms and inactivate some inflammatory chemicals." },
-          { q: "Samuel has taken some antihistamines as he is allergic to lupin. What cells would have increased in his body that has resulted in him taking this medication?", options: ["Phagocytes", "Basophils", "Philrodpot", "Neutrophils"], answer: 1, explanation: "Basophils release histamine and other inflammatory mediators during allergic reactions. Antihistamines counteract the histamine released by basophils." },
-          { q: "The first stage of haemostasis is", options: ["coagulation", "vasopressin", "vasodilation", "vasoconstriction"], answer: 3, explanation: "Vascular spasm (vasoconstriction) is the first stage — the damaged blood vessel constricts to reduce blood flow and limit blood loss." },
-          { q: "Why are RBC considered 'unselfish' in regards to their function?", options: ["They can reproduce to share their oxygen transport abilities.", "They consume oxygen only for their own energy needs.", "They donate their hemoglobin to white blood cells.", "They lack mitochondria to ensure all oxygen is delivered to other cells."], answer: 3, explanation: "RBCs have no mitochondria, so they cannot use oxygen for their own aerobic metabolism. This means all the oxygen they carry is delivered to other body cells — making them 'unselfish'." },
-          { q: "Which of the following blood groups is considered the universal donor?", options: ["AB", "O+", "O-", "AB+"], answer: 2, explanation: "O– blood has no A, B, or Rh antigens on the surface of its RBCs, so it can be given to anyone without causing a transfusion reaction." },
-          { q: "Which blood group seems the most 'selfish' as it can use any donated blood but can only give to one blood group?", options: ["AB+", "O+", "A", "AB-"], answer: 0, explanation: "AB+ is the universal recipient — it has all antigens and no ABO antibodies, so it can receive from any blood type. But it can only donate to other AB+ individuals." },
-          { q: "Why do mature RBC not have a nucleus?", options: ["To increase their energy production", "To allow for more hemoglobin storage and oxygen transport", "To prevent them from dividing", "To make them more rigid"], answer: 1, explanation: "Ejecting the nucleus frees up space inside the cell for more haemoglobin, maximising their oxygen-carrying capacity." },
-          { q: "What triggers erythropoiesis?", options: ["High levels of oxygen in the blood", "High levels of platelets", "Increased white blood cell count", "Low oxygen levels in tissues"], answer: 3, explanation: "Hypoxia (low tissue O₂) stimulates the kidneys to release erythropoietin (EPO), which in turn stimulates red bone marrow to produce more RBCs." },
-          { q: "Albumin is a large protein that floats around in blood plasma. It helps with homeostasis by acting as", options: ["fights off infections by producing antibodies", "promotes the production of eosinophils", "supports the transport of oxygen", "a chemical sponge soaking up H+ or releasing them to maintain acid base balance"], answer: 3, explanation: "Albumin acts as a buffer — it can absorb or release hydrogen ions (H⁺) to help maintain the blood's narrow pH range (7.35–7.45)." },
-          { q: "Blood is kept within a very narrow pH range of", options: ["7.3 - 7.4", "6.35 - 7.35", "7.35 to 7.45", "6.9 - 7.1"], answer: 2, explanation: "Blood pH is maintained between 7.35 and 7.45 — slightly alkaline. Deviations outside this range can be life-threatening." },
-          { q: "Specific cells that produce and release antibodies are", options: ["Neutrophils", "lymphocytes", "thrombocytes", "phagocytes"], answer: 1, explanation: "Lymphocytes (specifically B-lymphocytes that differentiate into plasma cells) are responsible for producing and releasing antibodies as part of the immune response." },
-          { q: "Harley is an RH+ male, and his partner Quinn is an RH- female. They decide to have children. What potential complication should they consider?", options: ["The child may inherit a genetic condition unrelated to RH factor.", "The child may inherit the RH- factor, causing no complications.", "The child may inherit the RH+ factor, potentially causing Rh incompatibility.", "There are no complications related to RH factors in this situation."], answer: 2, explanation: "If the child inherits the father's Rh+ factor, the Rh– mother's immune system may produce anti-Rh antibodies. This can cause haemolytic disease in subsequent Rh+ pregnancies." },
-          { q: "Manu has blood type A and needs a transfusion. Her sister Jemima has blood type B and wants to donate. What should be considered?", options: ["Manu can only receive blood from individuals with blood type AB.", "Manu can safely receive blood from Jemima because she is a sibling.", "Manu cannot receive blood from Jemima because their blood types are incompatible.", "Jemima can donate to Manu only if their Rh factors match."], answer: 2, explanation: "Type A blood contains anti-B antibodies. Receiving type B blood would cause agglutination (clumping), potentially leading to clogged vessels, renal failure, and death. Family relation does not matter." }
-        ]
-      }
-      // ──────────────────────────────────────────────────────────
-      // ADD NEW TOPICS HERE by copying the structure above
-      // ──────────────────────────────────────────────────────────
-    ];
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const SRS_KEY="srs_";
+function loadSrs(id){try{return JSON.parse(localStorage.getItem(SRS_KEY+id));}catch{return null;}}
+function saveSrs(id,d){try{localStorage.setItem(SRS_KEY+id,JSON.stringify(d));}catch{}}
+function initSrs(id,n){const e=loadSrs(id);if(e&&e.length===n)return e;return Array.from({length:n},(_,i)=>({index:i,box:0,lastSeen:0,correctStreak:0}));}
+function getDue(d){const now=Date.now(),iv=[0,6e4,3e5,864e5];return d.filter(c=>now-c.lastSeen>=iv[c.box]).sort((a,b)=>a.box-b.box||a.lastSeen-b.lastSeen);}
+const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
 
-    // ═══════════════════════════════════════════════════════════
-    // SRS LOGIC
-    // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// STYLES (all CSS variable based)
+// ═══════════════════════════════════════════════
+const S={
+app:{fontFamily:"'Outfit',sans-serif",minHeight:"100vh",background:"var(--bg)",color:"var(--text)"},
+box:{maxWidth:720,margin:"0 auto",padding:"20px 16px"},
+themeBtn:{position:"fixed",top:16,right:16,zIndex:999,background:"var(--surface)",border:"2px solid var(--border)",borderRadius:12,padding:"8px 14px",fontSize:"1.1rem",boxShadow:"var(--shadow)",color:"var(--text)"},
+heroWrap:{textAlign:"center",padding:"40px 0 32px"},heroTag:{display:"inline-block",background:"var(--border)",color:"var(--text-secondary)",padding:"4px 14px",borderRadius:20,fontSize:"0.8rem",fontWeight:500,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:12},heroH:{fontFamily:"'DM Serif Display',serif",fontSize:"2.8rem",fontWeight:400,lineHeight:1.1,marginBottom:8},heroP:{color:"var(--text-secondary)",fontSize:"1.05rem",fontWeight:300},
+card:{background:"var(--surface)",borderRadius:16,padding:28,boxShadow:"var(--shadow)",marginBottom:20},icon:{fontSize:"2rem",marginBottom:8},cardT:{fontFamily:"'DM Serif Display',serif",fontSize:"1.6rem",fontWeight:400,marginBottom:4},cardS:{color:"var(--text-secondary)",fontSize:"0.9rem",marginBottom:16},
+pills:{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"},pill:{background:"var(--bg)",padding:"4px 12px",borderRadius:20,fontSize:"0.78rem",color:"var(--text-secondary)",fontWeight:500},
+acts:{display:"flex",gap:8},bp:{color:"#fff",padding:"12px 24px",borderRadius:10,fontSize:"0.9rem",fontWeight:600,flex:1,textAlign:"center"},bs:{background:"transparent",border:"2px solid",padding:"12px 24px",borderRadius:10,fontSize:"0.9rem",fontWeight:600,flex:1,textAlign:"center"},bf:{padding:"12px 24px",borderRadius:10,fontSize:"0.9rem",fontWeight:600,flex:1,textAlign:"center",border:"none"},
+nav:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20},back:{background:"var(--surface)",padding:"8px 16px",borderRadius:8,fontSize:"0.85rem",color:"var(--text-secondary)",fontWeight:500,boxShadow:"var(--shadow)"},
+hdr:{display:"flex",alignItems:"center",gap:16,marginBottom:24},hdrT:{fontFamily:"'DM Serif Display',serif",fontSize:"2rem",fontWeight:400},hdrS:{color:"var(--text-secondary)",fontSize:"0.9rem"},
+tabs:{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16},tab:{padding:"8px 16px",borderRadius:8,fontSize:"0.8rem",whiteSpace:"nowrap"},
+dtRow:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12},dtToggle:{display:"inline-flex",borderRadius:8,overflow:"hidden",border:"2px solid var(--border)"},dtBtn:{padding:"6px 16px",fontSize:"0.8rem",fontWeight:600,color:"var(--text-secondary)",background:"transparent"},dtActive:{background:"var(--border)",color:"var(--text)"},
+noteBox:{background:"var(--surface)",borderRadius:16,padding:28,boxShadow:"var(--shadow)",marginBottom:20,maxHeight:"60vh",overflowY:"auto"},noteH:{fontFamily:"'DM Serif Display',serif",fontSize:"1.4rem",fontWeight:400,marginBottom:20},noteR:{display:"flex",gap:14,marginBottom:18,alignItems:"flex-start"},noteM:{minWidth:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.75rem",fontWeight:700,marginTop:2},noteT:{fontSize:"0.92rem",lineHeight:1.7,color:"var(--text)"},
+arrows:{display:"flex",justifyContent:"space-between",alignItems:"center"},arw:{background:"var(--surface)",padding:"10px 20px",borderRadius:8,fontSize:"0.85rem",color:"var(--text-secondary)",fontWeight:500,boxShadow:"var(--shadow)"},cnt:{color:"var(--text-secondary)",fontSize:"0.85rem",fontWeight:500},
+srsRow:{display:"flex",gap:8,marginBottom:20},srsStat:{background:"var(--surface)",borderRadius:12,padding:"12px 16px",textAlign:"center",flex:1,boxShadow:"var(--shadow)"},srsNum:{fontSize:"1.4rem",fontWeight:700},srsLbl:{fontSize:"0.7rem",color:"var(--text-secondary)",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.05em",marginTop:2},
+fc:{background:"var(--surface)",borderRadius:16,padding:32,boxShadow:"var(--shadow)",border:"2px solid var(--border)",minHeight:220,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16,userSelect:"none",cursor:"pointer"},fcIn:{textAlign:"center",width:"100%"},fcLbl:{fontSize:"0.75rem",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",color:"var(--text-secondary)",marginBottom:16},fcTxt:{fontSize:"1.1rem",lineHeight:1.7,color:"var(--text)"},fcHint:{marginTop:20,fontSize:"0.8rem",color:"var(--text-secondary)"},
+rRow:{display:"flex",gap:12},rMiss:{flex:1,padding:14,borderRadius:12,fontSize:"0.95rem",fontWeight:600,background:"var(--exp-no-bg)",color:"var(--exp-no-text)",border:"none"},rGot:{flex:1,padding:14,borderRadius:12,fontSize:"0.95rem",fontWeight:600,color:"#fff",border:"none"},
+done:{background:"var(--surface)",borderRadius:16,padding:32,boxShadow:"var(--shadow)",textAlign:"center"},doneT:{fontFamily:"'DM Serif Display',serif",fontSize:"1.5rem",fontWeight:400,marginBottom:12},
+qCnt:{color:"var(--text-secondary)",fontSize:"0.9rem",fontWeight:500},pTrack:{height:6,background:"var(--border)",borderRadius:3,marginBottom:20,overflow:"hidden"},pFill:{height:"100%",borderRadius:3,transition:"width 0.4s ease"},
+qCard:{background:"var(--surface)",borderRadius:16,padding:28,boxShadow:"var(--shadow)"},qTxt:{fontSize:"1.1rem",fontWeight:500,lineHeight:1.6,marginBottom:24,color:"var(--text)"},
+opts:{display:"flex",flexDirection:"column",gap:10},opt:{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:12,border:"2px solid var(--border)",background:"var(--bg)",textAlign:"left",fontSize:"0.9rem",color:"var(--text)"},optOk:{border:"2px solid #4CAF50",background:"var(--exp-ok-bg)",color:"var(--exp-ok-text)"},optNo:{border:"2px solid #E53935",background:"var(--exp-no-bg)",color:"var(--exp-no-text)"},optL:{width:30,height:30,borderRadius:8,background:"var(--border)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:"0.8rem",flexShrink:0,color:"var(--text)"},optT:{flex:1,lineHeight:1.5},chk:{color:"#4CAF50",fontWeight:700,fontSize:"1.1rem"},cross:{color:"#E53935",fontWeight:700,fontSize:"1.1rem"},
+expBox:{marginTop:20,padding:18,borderRadius:12,borderLeft:"4px solid"},
+resCard:{background:"var(--surface)",borderRadius:16,padding:32,boxShadow:"var(--shadow)",textAlign:"center"},resT:{fontFamily:"'DM Serif Display',serif",fontSize:"1.8rem",fontWeight:400,marginBottom:24},sCirc:{position:"relative",width:120,height:120,margin:"0 auto 16px"},sOver:{position:"absolute",top:0,left:0,width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"},sNum:{fontSize:"1.8rem",fontWeight:700},sDetail:{fontSize:"1rem",color:"var(--text-secondary)",marginBottom:8},sMsg:{fontSize:"1.05rem",marginBottom:24,fontWeight:500},
+resActs:{display:"flex",gap:12,justifyContent:"center",marginBottom:20},revTog:{background:"none",fontSize:"0.9rem",fontWeight:600,padding:"8px 16px"},revList:{marginTop:20,textAlign:"left",display:"flex",flexDirection:"column",gap:16},revItem:{background:"var(--review-bg)",borderRadius:12,padding:18},revQ:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:8},revBadge:{padding:"2px 10px",borderRadius:6,fontSize:"0.78rem",fontWeight:700,whiteSpace:"nowrap",flexShrink:0},revQT:{fontSize:"0.9rem",fontWeight:500,lineHeight:1.5},revA:{marginBottom:8,paddingLeft:52},revE:{fontSize:"0.85rem",color:"var(--text-secondary)",lineHeight:1.6,paddingLeft:52},
+foot:{textAlign:"center",padding:"32px 0",borderTop:"1px solid var(--border)",marginTop:32},footT:{color:"var(--text-secondary)",fontSize:"0.85rem"}
+};
 
-    const SRS_KEY = "srs_";
-    function loadSrs(id) { try { const r = localStorage.getItem(SRS_KEY+id); return r ? JSON.parse(r) : null; } catch { return null; } }
-    function saveSrs(id, d) { try { localStorage.setItem(SRS_KEY+id, JSON.stringify(d)); } catch {} }
-    function initSrs(id, n) { const e = loadSrs(id); if (e && e.length === n) return e; return Array.from({length:n},(_,i)=>({index:i,box:0,lastSeen:0,correctStreak:0})); }
-    function getDue(data) { const now=Date.now(), iv=[0,60000,300000,86400000]; return data.filter(c=>now-c.lastSeen>=iv[c.box]).sort((a,b)=>a.box-b.box||a.lastSeen-b.lastSeen); }
-    const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+function ProgressRing({percent,size=80,stroke=6,color}){const r=(size-stroke)/2,c=2*Math.PI*r,o=c-(percent/100)*c;return <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke}/><circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={o} strokeLinecap="round" style={{transition:"stroke-dashoffset 0.8s ease"}}/></svg>;}
 
-    // ═══════════════════════════════════════════════════════════
-    // STYLES
-    // ═══════════════════════════════════════════════════════════
+function HomeView({topics,onStudy,onFlash,onQuiz}){return <div style={S.box}><header style={S.heroWrap}><div style={S.heroTag}>Health Science 1</div><h1 style={S.heroH}>Continuous Test 2</h1><p style={S.heroP}>Review notes, drill flashcards, or test yourself</p></header>{topics.map(t=><div key={t.id} style={{...S.card,borderTop:`4px solid ${t.color}`}}><div style={S.icon}>{t.icon}</div><h2 style={S.cardT}>{t.title}</h2><p style={S.cardS}>{t.subtitle}</p><div style={S.pills}><span style={S.pill}>{t.notes.length} sections</span><span style={S.pill}>{(t.flashcards||[]).length} cards</span><span style={S.pill}>{t.questions.length} questions</span></div><div style={S.acts}><button style={{...S.bp,background:t.color}} onClick={()=>onStudy(t)}>📖 Notes</button><button style={{...S.bf,background:t.accentLight,color:t.color}} onClick={()=>onFlash(t)}>🃏 Cards</button><button style={{...S.bs,color:t.color,borderColor:t.color}} onClick={()=>onQuiz(t)}>✏️ Quiz</button></div></div>)}<footer style={S.foot}><p style={S.footT}>Edit the <code>TOPICS</code> array in <code>index.html</code> to add topics</p></footer></div>;}
 
-    const S = {
-      app: { fontFamily:"'Outfit',sans-serif", minHeight:"100vh", background:"var(--bg)", color:"var(--text)" },
-      box: { maxWidth:720, margin:"0 auto", padding:"20px 16px" },
-      heroWrap: { textAlign:"center", padding:"40px 0 32px" },
-      heroTag: { display:"inline-block", background:"var(--border)", color:"var(--text-secondary)", padding:"4px 14px", borderRadius:20, fontSize:"0.8rem", fontWeight:500, letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:12 },
-      heroH: { fontFamily:"'DM Serif Display',serif", fontSize:"2.8rem", fontWeight:400, lineHeight:1.1, marginBottom:8 },
-      heroP: { color:"var(--text-secondary)", fontSize:"1.05rem", fontWeight:300 },
-      card: { background:"var(--surface)", borderRadius:16, padding:28, boxShadow:"var(--shadow)", marginBottom:20 },
-      icon: { fontSize:"2rem", marginBottom:8 },
-      cardT: { fontFamily:"'DM Serif Display',serif", fontSize:"1.6rem", fontWeight:400, marginBottom:4 },
-      cardS: { color:"var(--text-secondary)", fontSize:"0.9rem", marginBottom:16 },
-      pills: { display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" },
-      pill: { background:"var(--bg)", padding:"4px 12px", borderRadius:20, fontSize:"0.78rem", color:"var(--text-secondary)", fontWeight:500 },
-      acts: { display:"flex", gap:8 },
-      bp: { color:"#fff", padding:"12px 24px", borderRadius:10, fontSize:"0.9rem", fontWeight:600, flex:1, textAlign:"center" },
-      bs: { background:"transparent", border:"2px solid", padding:"12px 24px", borderRadius:10, fontSize:"0.9rem", fontWeight:600, flex:1, textAlign:"center" },
-      bf: { padding:"12px 24px", borderRadius:10, fontSize:"0.9rem", fontWeight:600, flex:1, textAlign:"center" },
-      nav: { display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 },
-      back: { background:"var(--surface)", padding:"8px 16px", borderRadius:8, fontSize:"0.85rem", color:"var(--text-secondary)", fontWeight:500, boxShadow:"var(--shadow)" },
-      hdr: { display:"flex", alignItems:"center", gap:16, marginBottom:24 },
-      hdrT: { fontFamily:"'DM Serif Display',serif", fontSize:"2rem", fontWeight:400 },
-      hdrS: { color:"var(--text-secondary)", fontSize:"0.9rem" },
-      tabs: { display:"flex", flexWrap:"wrap", gap:6, marginBottom:24 },
-      tab: { padding:"8px 16px", borderRadius:8, fontSize:"0.8rem", whiteSpace:"nowrap" },
-      noteBox: { background:"var(--surface)", borderRadius:16, padding:28, boxShadow:"var(--shadow)", marginBottom:20, maxHeight:"60vh", overflowY:"auto" },
-      noteH: { fontFamily:"'DM Serif Display',serif", fontSize:"1.4rem", fontWeight:400, marginBottom:20 },
-      noteR: { display:"flex", gap:14, marginBottom:18, alignItems:"flex-start" },
-      noteM: { minWidth:28, height:28, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.75rem", fontWeight:700, marginTop:2 },
-      noteT: { fontSize:"0.92rem", lineHeight:1.7 },
-      arrows: { display:"flex", justifyContent:"space-between", alignItems:"center" },
-      arw: { background:"var(--surface)", padding:"10px 20px", borderRadius:8, fontSize:"0.85rem", color:"var(--text-secondary)", fontWeight:500, boxShadow:"var(--shadow)" },
-      cnt: { color:"var(--text-secondary)", fontSize:"0.85rem", fontWeight:500 },
-      // flashcards
-      srsRow: { display:"flex", gap:8, marginBottom:20, justifyContent:"center" },
-      srsStat: { background:"var(--surface)", borderRadius:12, padding:"12px 16px", textAlign:"center", flex:1, boxShadow:"var(--shadow)" },
-      srsNum: { fontSize:"1.4rem", fontWeight:700 },
-      srsLbl: { fontSize:"0.7rem", color:"var(--text-secondary)", fontWeight:500, textTransform:"uppercase", letterSpacing:"0.05em", marginTop:2 },
-      fc: { background:"var(--surface)", borderRadius:16, padding:32, boxShadow:"var(--shadow)", border:"2px solid var(--border)", minHeight:220, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16, userSelect:"none", cursor:"pointer" },
-      fcIn: { textAlign:"center", width:"100%" },
-      fcLbl: { fontSize:"0.75rem", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-secondary)", marginBottom:16 },
-      fcTxt: { fontSize:"1.1rem", lineHeight:1.7, fontWeight:400 },
-      fcHint: { marginTop:20, fontSize:"0.8rem", color:"var(--text-secondary)" },
-      rRow: { display:"flex", gap:12 },
-      rMiss: { flex:1, padding:"14px", borderRadius:12, fontSize:"0.95rem", fontWeight:600, background:"#FFEBEE", color:"#C62828", border:"2px solid #FFCDD2" },
-      rGot: { flex:1, padding:"14px", borderRadius:12, fontSize:"0.95rem", fontWeight:600, color:"#fff", border:"none" },
-      done: { background:"var(--surface)", borderRadius:16, padding:32, boxShadow:"var(--shadow)", textAlign:"center" },
-      doneT: { fontFamily:"'DM Serif Display',serif", fontSize:"1.5rem", fontWeight:400, marginBottom:12 },
-      // quiz
-      qCnt: { color:"var(--text-secondary)", fontSize:"0.9rem", fontWeight:500 },
-      pTrack: { height:6, background:"var(--border)", borderRadius:3, marginBottom:20, overflow:"hidden" },
-      pFill: { height:"100%", borderRadius:3, transition:"width 0.4s ease" },
-      qCard: { background:"var(--surface)", borderRadius:16, padding:28, boxShadow:"var(--shadow)" },
-      qTxt: { fontSize:"1.1rem", fontWeight:500, lineHeight:1.6, marginBottom:24 },
-      opts: { display:"flex", flexDirection:"column", gap:10 },
-      opt: { display:"flex", alignItems:"center", gap:12, padding:"14px 16px", borderRadius:12, border:"2px solid var(--border)", background:"var(--bg)", textAlign:"left", fontSize:"0.9rem" },
-      optOk: { border:"2px solid #2E7D32", background:"#E8F5E9" },
-      optNo: { border:"2px solid #C62828", background:"#FFEBEE" },
-      optL: { width:30, height:30, borderRadius:8, background:"var(--border)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, fontSize:"0.8rem", flexShrink:0 },
-      optT: { flex:1, lineHeight:1.5 },
-      chk: { color:"#2E7D32", fontWeight:700, fontSize:"1.1rem" },
-      cross: { color:"#C62828", fontWeight:700, fontSize:"1.1rem" },
-      expBox: { marginTop:20, padding:18, borderRadius:12, borderLeft:"4px solid" },
-      // results
-      resCard: { background:"var(--surface)", borderRadius:16, padding:32, boxShadow:"var(--shadow)", textAlign:"center" },
-      resT: { fontFamily:"'DM Serif Display',serif", fontSize:"1.8rem", fontWeight:400, marginBottom:24 },
-      sCirc: { position:"relative", width:120, height:120, margin:"0 auto 16px" },
-      sOver: { position:"absolute", top:0, left:0, width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" },
-      sNum: { fontSize:"1.8rem", fontWeight:700 },
-      sDetail: { fontSize:"1rem", color:"var(--text-secondary)", marginBottom:8 },
-      sMsg: { fontSize:"1.05rem", marginBottom:24, fontWeight:500 },
-      resActs: { display:"flex", gap:12, justifyContent:"center", marginBottom:20 },
-      revTog: { background:"none", fontSize:"0.9rem", fontWeight:600, padding:"8px 16px" },
-      revList: { marginTop:20, textAlign:"left", display:"flex", flexDirection:"column", gap:16 },
-      revItem: { background:"var(--bg)", borderRadius:12, padding:18 },
-      revQ: { display:"flex", gap:10, alignItems:"flex-start", marginBottom:8 },
-      revBadge: { padding:"2px 10px", borderRadius:6, fontSize:"0.78rem", fontWeight:700, whiteSpace:"nowrap", flexShrink:0 },
-      revQT: { fontSize:"0.9rem", fontWeight:500, lineHeight:1.5 },
-      revA: { marginBottom:8, paddingLeft:52 },
-      revE: { fontSize:"0.85rem", color:"var(--text-secondary)", lineHeight:1.6, paddingLeft:52 },
-      foot: { textAlign:"center", padding:"32px 0", borderTop:"1px solid var(--border)", marginTop:32 },
-      footT: { color:"var(--text-secondary)", fontSize:"0.85rem" },
-    };
+function StudyView({topic,onBack,onQuiz}){const [sec,setSec]=useState(0);const [detail,setDetail]=useState(false);const ref=useRef(null);useEffect(()=>{if(ref.current)ref.current.scrollTo({top:0,behavior:"smooth"});},[sec,detail]);const n=topic.notes[sec],content=detail?(n.detailed||n.summary):n.summary;return <div style={S.box}><nav style={S.nav}><button onClick={onBack} style={S.back}>← Back</button><button onClick={onQuiz} style={{...S.bp,background:topic.color,padding:"8px 20px",fontSize:"0.85rem",flex:"none"}}>Take Quiz →</button></nav><div style={S.hdr}><span style={{fontSize:"2.5rem"}}>{topic.icon}</span><div><h1 style={S.hdrT}>{topic.title}</h1><p style={S.hdrS}>{topic.subtitle}</p></div></div><div style={S.tabs}>{topic.notes.map((x,i)=><button key={i} onClick={()=>setSec(i)} style={{...S.tab,background:i===sec?topic.color:"transparent",color:i===sec?"#fff":"var(--text-secondary)",fontWeight:i===sec?600:400}}>{x.heading}</button>)}</div><div style={S.dtRow}><div style={S.dtToggle}><button onClick={()=>setDetail(false)} style={{...S.dtBtn,...(!detail?S.dtActive:{})}}> Summary</button><button onClick={()=>setDetail(true)} style={{...S.dtBtn,...(detail?S.dtActive:{})}}>Detailed</button></div><span style={{fontSize:"0.78rem",color:"var(--text-secondary)"}}>{content.length} points</span></div><div ref={ref} style={S.noteBox}><h2 style={{...S.noteH,color:topic.color}}>{n.heading}</h2>{content.map((p,i)=><div key={i} style={S.noteR}><div style={{...S.noteM,background:topic.accentLight,color:topic.color}}>{i+1}</div><p style={S.noteT}>{p}</p></div>)}</div><div style={S.arrows}><button disabled={sec===0} onClick={()=>setSec(sec-1)} style={{...S.arw,opacity:sec===0?0.3:1}}>← Previous</button><span style={S.cnt}>{sec+1}/{topic.notes.length}</span>{sec<topic.notes.length-1?<button onClick={()=>setSec(sec+1)} style={S.arw}>Next →</button>:<button onClick={onQuiz} style={{...S.bp,background:topic.color,padding:"10px 24px",flex:"none"}}>Take Quiz →</button>}</div></div>;}
 
-    // ═══════════════════════════════════════════════════════════
-    // COMPONENTS
-    // ═══════════════════════════════════════════════════════════
+const BOX_L=["New","Learning","Reviewing","Mastered"],BOX_C=["#78909C","#F57C00","#1565C0","#2E7D32"];
+function FlashView({topic,onBack}){const cards=topic.flashcards||[];const [srs,setSrs]=useState(()=>initSrs(topic.id,cards.length));const [due,setDue]=useState([]);const [ci,setCi]=useState(0);const [flip,setFlip]=useState(false);const [done,setDone]=useState(false);const [stats,setStats]=useState({seen:0,got:0,miss:0});useEffect(()=>{const d=getDue(srs);if(!d.length)setDone(true);else{setDue(d);setCi(0);setFlip(false);}},[]);const cur=due[ci],cc=cur?cards[cur.index]:null;const bc=[0,0,0,0];srs.forEach(c=>bc[c.box]++);const rate=ok=>{const u=[...srs],c={...u[cur.index]};c.lastSeen=Date.now();if(ok){c.correctStreak++;c.box=Math.min(c.box+1,3);}else{c.correctStreak=0;c.box=Math.max(c.box-1,0);}u[cur.index]=c;setSrs(u);saveSrs(topic.id,u);setStats(p=>({seen:p.seen+1,got:ok?p.got+1:p.got,miss:ok?p.miss:p.miss+1}));if(ci+1>=due.length)setDone(true);else{setCi(ci+1);setFlip(false);}};const reset=()=>{const f=Array.from({length:cards.length},(_,i)=>({index:i,box:0,lastSeen:0,correctStreak:0}));setSrs(f);saveSrs(topic.id,f);setDue(getDue(f));setCi(0);setFlip(false);setDone(false);setStats({seen:0,got:0,miss:0});};return <div style={S.box}><nav style={S.nav}><button onClick={onBack} style={S.back}>← Back</button><span style={S.qCnt}>🃏 Flashcards</span></nav><div style={S.hdr}><span style={{fontSize:"2.5rem"}}>{topic.icon}</span><div><h1 style={S.hdrT}>{topic.title}</h1><p style={S.hdrS}>{cards.length} cards · Spaced repetition</p></div></div><div style={S.srsRow}>{BOX_L.map((l,i)=><div key={i} style={S.srsStat}><div style={{...S.srsNum,color:BOX_C[i]}}>{bc[i]}</div><div style={S.srsLbl}>{l}</div></div>)}</div>{done?<div style={S.done}>{stats.seen>0?<><div style={{fontSize:"2.5rem",marginBottom:12}}>🎉</div><h2 style={S.doneT}>Session Complete</h2><p style={{fontSize:"0.95rem",marginBottom:8,color:"var(--text)"}}>Reviewed: <strong>{stats.seen}</strong> · Got it: <strong style={{color:"#4CAF50"}}>{stats.got}</strong> · Needs work: <strong style={{color:"#E53935"}}>{stats.miss}</strong></p><p style={{color:"var(--text-secondary)",fontSize:"0.9rem",marginBottom:24}}>Come back later for due cards.</p></>:<><div style={{fontSize:"2.5rem",marginBottom:12}}>✅</div><h2 style={S.doneT}>No cards due</h2><p style={{color:"var(--text-secondary)",fontSize:"0.9rem",marginBottom:24}}>All caught up!</p></>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button onClick={reset} style={{...S.bs,color:topic.color,borderColor:topic.color,flex:"none",padding:"12px 24px"}}>🔄 Reset All</button><button onClick={onBack} style={{...S.bp,background:topic.color,flex:"none",padding:"12px 24px"}}>🏠 Home</button></div></div>:cc?<><div style={S.pTrack}><div style={{...S.pFill,width:`${((ci+1)/due.length)*100}%`,background:topic.color}}/></div><div style={{textAlign:"center",color:"var(--text-secondary)",fontSize:"0.85rem",marginBottom:16}}>Card {ci+1} of {due.length}</div><div onClick={()=>setFlip(!flip)} style={{...S.fc,borderColor:flip?topic.color:"var(--border)"}}>{!flip?<div style={S.fcIn}><div style={S.fcLbl}>Question</div><p style={S.fcTxt}>{cc.front}</p><div style={S.fcHint}>Tap to flip</div></div>:<div style={S.fcIn}><div style={{...S.fcLbl,color:topic.color}}>Answer</div><p style={S.fcTxt}>{cc.back.split("\n").map((l,i)=><span key={i}>{l}{i<cc.back.split("\n").length-1&&<br/>}</span>)}</p><div style={S.fcHint}>Tap to flip back</div></div>}</div><div style={S.rRow}><button onClick={e=>{e.stopPropagation();rate(false);}} style={S.rMiss}>✕ Needs Work</button><button onClick={e=>{e.stopPropagation();rate(true);}} style={{...S.rGot,background:topic.color}}>✓ Got It</button></div></>:null}</div>;}
 
-    function ProgressRing({percent,size=80,stroke=6,color}){
-      const r=(size-stroke)/2,c=2*Math.PI*r,o=c-(percent/100)*c;
-      return <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke}/><circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={o} strokeLinecap="round" style={{transition:"stroke-dashoffset 0.8s ease"}}/></svg>;
-    }
+function QuizView({state,setState,onFinish,onBack}){const{topic,questions:qs,current:ci,answers:ans,showExplanation:se}=state;const q=qs[ci],sel=ans[ci],ha=sel!==undefined,ok=ha&&sel===q.answer,prog=((ci+1)/qs.length)*100;const pick=i=>{if(ha)return;const a=[...ans];a[ci]=i;setState({...state,answers:a,showExplanation:true});};const next=()=>{if(ci+1>=qs.length)onFinish();else setState({...state,current:ci+1,showExplanation:false});};return <div style={S.box}><nav style={S.nav}><button onClick={onBack} style={S.back}>✕ Exit</button><span style={S.qCnt}>{ci+1}/{qs.length}</span></nav><div style={S.pTrack}><div style={{...S.pFill,width:`${prog}%`,background:topic.color}}/></div><div style={S.qCard}><p style={S.qTxt}>{q.q}</p><div style={S.opts}>{q.options.map((o,i)=>{let st={...S.opt};if(ha){if(i===q.answer)st={...st,...S.optOk};else if(i===sel&&!ok)st={...st,...S.optNo};else st={...st,opacity:0.4};}return <button key={i} onClick={()=>pick(i)} style={st} disabled={ha}><span style={S.optL}>{String.fromCharCode(65+i)}</span><span style={S.optT}>{o}</span>{ha&&i===q.answer&&<span style={S.chk}>✓</span>}{ha&&i===sel&&!ok&&i!==q.answer&&<span style={S.cross}>✕</span>}</button>;})}</div>{se&&<div style={{...S.expBox,borderColor:ok?"#4CAF50":"#E53935",background:ok?"var(--exp-ok-bg)":"var(--exp-no-bg)"}}><div style={{fontWeight:700,marginBottom:6,color:ok?"var(--exp-ok-text)":"var(--exp-no-text)",fontSize:"0.95rem"}}>{ok?"✓ Correct!":"✕ Incorrect"}</div><p style={{margin:0,fontSize:"0.9rem",lineHeight:1.6,color:"var(--text)"}}>{q.explanation}</p></div>}{ha&&<button onClick={next} style={{...S.bp,background:topic.color,width:"100%",marginTop:16,padding:14}}>{ci+1>=qs.length?"See Results":"Next Question →"}</button>}</div></div>;}
 
-    // ── Home ──
-    function HomeView({topics,onStudy,onFlash,onQuiz}){
-      return <div style={S.box}>
-        <header style={S.heroWrap}>
-          <div style={S.heroTag}>Health Science 1</div>
-          <h1 style={S.heroH}>Continuous Test 2</h1>
-          <p style={S.heroP}>Select a topic to review notes, drill flashcards, or test yourself</p>
-        </header>
-        {topics.map(t=><div key={t.id} style={{...S.card,borderTop:`4px solid ${t.color}`}}>
-          <div style={S.icon}>{t.icon}</div>
-          <h2 style={S.cardT}>{t.title}</h2>
-          <p style={S.cardS}>{t.subtitle}</p>
-          <div style={S.pills}>
-            <span style={S.pill}>{t.notes.length} sections</span>
-            <span style={S.pill}>{(t.flashcards||[]).length} cards</span>
-            <span style={S.pill}>{t.questions.length} questions</span>
-          </div>
-          <div style={S.acts}>
-            <button style={{...S.bp,background:t.color}} onClick={()=>onStudy(t)}>📖 Notes</button>
-            <button style={{...S.bf,background:t.accentLight,color:t.color}} onClick={()=>onFlash(t)}>🃏 Cards</button>
-            <button style={{...S.bs,color:t.color,borderColor:t.color}} onClick={()=>onQuiz(t)}>✏️ Quiz</button>
-          </div>
-        </div>)}
-        <footer style={S.foot}><p style={S.footT}>To add new topics, edit the <code>TOPICS</code> array in <code>index.html</code></p></footer>
-      </div>;
-    }
+function ResultsView({state,onRetry,onHome}){const{topic,questions:qs,answers:ans}=state;const cor=ans.filter((a,i)=>a===qs[i].answer).length,pct=Math.round(cor/qs.length*100);const[sr,setSr]=useState(false);let msg="Keep studying 💪";if(pct>=90)msg="Outstanding! 🌟";else if(pct>=70)msg="Great work! 👏";else if(pct>=50)msg="Good effort! 📚";return <div style={S.box}><div style={S.resCard}><h2 style={{...S.resT,color:topic.color}}>{topic.icon} Quiz Complete</h2><div style={S.sCirc}><ProgressRing percent={pct} size={120} stroke={8} color={topic.color}/><div style={S.sOver}><span style={S.sNum}>{pct}%</span></div></div><p style={S.sDetail}>{cor}/{qs.length} correct</p><p style={S.sMsg}>{msg}</p><div style={S.resActs}><button onClick={onRetry} style={{...S.bp,background:topic.color,flex:"none",padding:"12px 24px"}}>🔄 Retry</button><button onClick={onHome} style={{...S.bs,flex:"none",padding:"12px 24px",borderColor:"var(--border)",color:"var(--text)"}}>🏠 Home</button></div><button onClick={()=>setSr(!sr)} style={{...S.revTog,color:topic.color}}>{sr?"Hide Review ▲":"Review Answers ▼"}</button>{sr&&<div style={S.revList}>{qs.map((q,i)=>{const w=ans[i]===q.answer;return <div key={i} style={{...S.revItem,borderLeft:`4px solid ${w?"#4CAF50":"#E53935"}`}}><div style={S.revQ}><span style={{...S.revBadge,background:w?"var(--exp-ok-bg)":"var(--exp-no-bg)",color:w?"var(--exp-ok-text)":"var(--exp-no-text)"}}>{w?"✓":"✕"} Q{i+1}</span><span style={S.revQT}>{q.q}</span></div>{!w&&<div style={S.revA}><div style={{color:"var(--exp-no-text)",fontSize:"0.85rem"}}>Your answer: {q.options[ans[i]]}</div><div style={{color:"var(--exp-ok-text)",fontSize:"0.85rem",fontWeight:600}}>Correct: {q.options[q.answer]}</div></div>}<p style={S.revE}>{q.explanation}</p></div>;})}</div>}</div></div>;}
 
-    // ── Study ──
-    function StudyView({topic,onBack,onQuiz}){
-      const [sec,setSec]=useState(0);
-      const ref=useRef(null);
-      useEffect(()=>{if(ref.current)ref.current.scrollTo({top:0,behavior:"smooth"});},[sec]);
-      return <div style={S.box}>
-        <nav style={S.nav}>
-          <button onClick={onBack} style={S.back}>← Back</button>
-          <button onClick={onQuiz} style={{...S.bp,background:topic.color,padding:"8px 20px",fontSize:"0.85rem",flex:"none"}}>Take Quiz →</button>
-        </nav>
-        <div style={S.hdr}><span style={{fontSize:"2.5rem"}}>{topic.icon}</span><div><h1 style={S.hdrT}>{topic.title}</h1><p style={S.hdrS}>{topic.subtitle}</p></div></div>
-        <div style={S.tabs}>{topic.notes.map((n,i)=><button key={i} onClick={()=>setSec(i)} style={{...S.tab,background:i===sec?topic.color:"transparent",color:i===sec?"#fff":"var(--text-secondary)",fontWeight:i===sec?600:400}}>{n.heading}</button>)}</div>
-        <div ref={ref} style={S.noteBox}>
-          <h2 style={{...S.noteH,color:topic.color}}>{topic.notes[sec].heading}</h2>
-          {topic.notes[sec].content.map((p,i)=><div key={i} style={S.noteR}><div style={{...S.noteM,background:topic.accentLight,color:topic.color}}>{i+1}</div><p style={S.noteT}>{p}</p></div>)}
-        </div>
-        <div style={S.arrows}>
-          <button disabled={sec===0} onClick={()=>setSec(sec-1)} style={{...S.arw,opacity:sec===0?0.3:1}}>← Previous</button>
-          <span style={S.cnt}>{sec+1} / {topic.notes.length}</span>
-          {sec<topic.notes.length-1?<button onClick={()=>setSec(sec+1)} style={S.arw}>Next →</button>:<button onClick={onQuiz} style={{...S.bp,background:topic.color,padding:"10px 24px",flex:"none"}}>Take Quiz →</button>}
-        </div>
-      </div>;
-    }
+function App(){const[theme,setTheme]=useState(()=>{try{return localStorage.getItem("theme")||"light";}catch{return"light";}});const[view,setView]=useState("home");const[topic,setTopic]=useState(null);const[qs,setQs]=useState(null);useEffect(()=>{document.documentElement.setAttribute("data-theme",theme);try{localStorage.setItem("theme",theme);}catch{}},[theme]);const goHome=()=>{setView("home");setTopic(null);setQs(null);};const startQuiz=t=>{const sh=shuffle(t.questions).map(q=>{const oa=q.options[q.answer],so=shuffle(q.options);return{...q,options:so,answer:so.indexOf(oa)};});setQs({topic:t,questions:sh,current:0,answers:[],showExplanation:false});setView("quiz");};return <div style={S.app}><button style={S.themeBtn} onClick={()=>setTheme(theme==="light"?"dark":"light")}>{theme==="light"?"🌙":"☀️"}</button>{view==="home"&&<HomeView topics={TOPICS} onStudy={t=>{setTopic(t);setView("study");}} onFlash={t=>{setTopic(t);setView("flash");}} onQuiz={startQuiz}/>}{view==="study"&&topic&&<StudyView topic={topic} onBack={goHome} onQuiz={()=>startQuiz(topic)}/>}{view==="flash"&&topic&&<FlashView topic={topic} onBack={goHome}/>}{view==="quiz"&&qs&&<QuizView state={qs} setState={setQs} onFinish={()=>setView("results")} onBack={goHome}/>}{view==="results"&&qs&&<ResultsView state={qs} onRetry={()=>startQuiz(qs.topic)} onHome={goHome}/>}</div>;}
 
-    // ── Flashcards ──
-    const BOX_LBL=["New","Learning","Reviewing","Mastered"];
-    const BOX_CLR=["#78909C","#F57C00","#1565C0","#2E7D32"];
-
-    function FlashView({topic,onBack}){
-      const cards=topic.flashcards||[];
-      const [srs,setSrs]=useState(()=>initSrs(topic.id,cards.length));
-      const [due,setDue]=useState([]);
-      const [ci,setCi]=useState(0);
-      const [flip,setFlip]=useState(false);
-      const [done,setDone]=useState(false);
-      const [stats,setStats]=useState({seen:0,got:0,miss:0});
-
-      useEffect(()=>{const d=getDue(srs);if(!d.length)setDone(true);else{setDue(d);setCi(0);setFlip(false);}},[]);
-
-      const cur=due[ci], cc=cur?cards[cur.index]:null;
-      const bc=[0,0,0,0]; srs.forEach(c=>bc[c.box]++);
-
-      const rate=(ok)=>{
-        const u=[...srs],c={...u[cur.index]};c.lastSeen=Date.now();
-        if(ok){c.correctStreak++;c.box=Math.min(c.box+1,3);}else{c.correctStreak=0;c.box=Math.max(c.box-1,0);}
-        u[cur.index]=c;setSrs(u);saveSrs(topic.id,u);
-        setStats(p=>({seen:p.seen+1,got:ok?p.got+1:p.got,miss:ok?p.miss:p.miss+1}));
-        if(ci+1>=due.length)setDone(true);else{setCi(ci+1);setFlip(false);}
-      };
-      const reset=()=>{
-        const f=Array.from({length:cards.length},(_,i)=>({index:i,box:0,lastSeen:0,correctStreak:0}));
-        setSrs(f);saveSrs(topic.id,f);const d=getDue(f);setDue(d);setCi(0);setFlip(false);setDone(false);setStats({seen:0,got:0,miss:0});
-      };
-
-      return <div style={S.box}>
-        <nav style={S.nav}><button onClick={onBack} style={S.back}>← Back</button><span style={S.qCnt}>🃏 Flashcards</span></nav>
-        <div style={S.hdr}><span style={{fontSize:"2.5rem"}}>{topic.icon}</span><div><h1 style={S.hdrT}>{topic.title}</h1><p style={S.hdrS}>{cards.length} flashcards · Spaced repetition</p></div></div>
-        <div style={S.srsRow}>{BOX_LBL.map((l,i)=><div key={i} style={S.srsStat}><div style={{...S.srsNum,color:BOX_CLR[i]}}>{bc[i]}</div><div style={S.srsLbl}>{l}</div></div>)}</div>
-
-        {done?<div style={S.done}>
-          {stats.seen>0?<><div style={{fontSize:"2.5rem",marginBottom:12}}>🎉</div><h2 style={S.doneT}>Session Complete</h2><p style={{fontSize:"0.95rem",marginBottom:8}}>Cards reviewed: <strong>{stats.seen}</strong> · Got it: <strong style={{color:"#2E7D32"}}>{stats.got}</strong> · Needs work: <strong style={{color:"#C62828"}}>{stats.miss}</strong></p><p style={{color:"var(--text-secondary)",fontSize:"0.9rem",marginBottom:24}}>Come back later to review cards as they become due again.</p></>:<><div style={{fontSize:"2.5rem",marginBottom:12}}>✅</div><h2 style={S.doneT}>No cards due right now</h2><p style={{color:"var(--text-secondary)",fontSize:"0.9rem",marginBottom:24}}>All caught up! Cards will become due again based on your performance.</p></>}
-          <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-            <button onClick={reset} style={{...S.bs,color:topic.color,borderColor:topic.color,flex:"none",padding:"12px 24px"}}>🔄 Reset All</button>
-            <button onClick={onBack} style={{...S.bp,background:topic.color,flex:"none",padding:"12px 24px"}}>🏠 Home</button>
-          </div>
-        </div>:cc?<>
-          <div style={S.pTrack}><div style={{...S.pFill,width:`${((ci+1)/due.length)*100}%`,background:topic.color}}/></div>
-          <div style={{textAlign:"center",color:"var(--text-secondary)",fontSize:"0.85rem",marginBottom:16}}>Card {ci+1} of {due.length} due</div>
-          <div onClick={()=>setFlip(!flip)} style={{...S.fc,borderColor:flip?topic.color:"var(--border)"}}>
-            {!flip?<div style={S.fcIn}><div style={S.fcLbl}>Question</div><p style={S.fcTxt}>{cc.front}</p><div style={S.fcHint}>Tap to flip</div></div>
-            :<div style={S.fcIn}><div style={{...S.fcLbl,color:topic.color}}>Answer</div><p style={S.fcTxt}>{cc.back.split("\n").map((l,i)=><span key={i}>{l}{i<cc.back.split("\n").length-1&&<br/>}</span>)}</p><div style={S.fcHint}>Tap to flip back</div></div>}
-          </div>
-          <div style={S.rRow}>
-            <button onClick={e=>{e.stopPropagation();rate(false);}} style={S.rMiss}>✕ Needs Work</button>
-            <button onClick={e=>{e.stopPropagation();rate(true);}} style={{...S.rGot,background:topic.color}}>✓ Got It</button>
-          </div>
-        </>:null}
-      </div>;
-    }
-
-    // ── Quiz ──
-    function QuizView({state,setState,onFinish,onBack}){
-      const {topic,questions:qs,current:ci,answers:ans,showExplanation:se}=state;
-      const q=qs[ci],sel=ans[ci],ha=sel!==undefined,ok=ha&&sel===q.answer,prog=((ci+1)/qs.length)*100;
-      const pick=i=>{if(ha)return;const a=[...ans];a[ci]=i;setState({...state,answers:a,showExplanation:true});};
-      const next=()=>{if(ci+1>=qs.length)onFinish();else setState({...state,current:ci+1,showExplanation:false});};
-      return <div style={S.box}>
-        <nav style={S.nav}><button onClick={onBack} style={S.back}>✕ Exit Quiz</button><span style={S.qCnt}>{ci+1} of {qs.length}</span></nav>
-        <div style={S.pTrack}><div style={{...S.pFill,width:`${prog}%`,background:topic.color}}/></div>
-        <div style={S.qCard}>
-          <p style={S.qTxt}>{q.q}</p>
-          <div style={S.opts}>{q.options.map((o,i)=>{
-            let st={...S.opt};
-            if(ha){if(i===q.answer)st={...st,...S.optOk};else if(i===sel&&!ok)st={...st,...S.optNo};else st={...st,opacity:0.5};}
-            return <button key={i} onClick={()=>pick(i)} style={st} disabled={ha}>
-              <span style={S.optL}>{String.fromCharCode(65+i)}</span><span style={S.optT}>{o}</span>
-              {ha&&i===q.answer&&<span style={S.chk}>✓</span>}
-              {ha&&i===sel&&!ok&&i!==q.answer&&<span style={S.cross}>✕</span>}
-            </button>;
-          })}</div>
-          {se&&<div style={{...S.expBox,borderColor:ok?"#2E7D32":"#C62828",background:ok?"#E8F5E9":"#FFEBEE"}}>
-            <div style={{fontWeight:700,marginBottom:6,color:ok?"#2E7D32":"#C62828",fontSize:"0.95rem"}}>{ok?"✓ Correct!":"✕ Incorrect"}</div>
-            <p style={{margin:0,fontSize:"0.9rem",lineHeight:1.6,color:"#333"}}>{q.explanation}</p>
-          </div>}
-          {ha&&<button onClick={next} style={{...S.bp,background:topic.color,width:"100%",marginTop:16,padding:"14px"}}>{ci+1>=qs.length?"See Results":"Next Question →"}</button>}
-        </div>
-      </div>;
-    }
-
-    // ── Results ──
-    function ResultsView({state,onRetry,onHome}){
-      const {topic,questions:qs,answers:ans}=state;
-      const cor=ans.filter((a,i)=>a===qs[i].answer).length,pct=Math.round((cor/qs.length)*100);
-      const [sr,setSr]=useState(false);
-      let msg="Keep studying — you'll get there! 💪";
-      if(pct>=90)msg="Outstanding! You've mastered this topic! 🌟";else if(pct>=70)msg="Great work! Just a few gaps to fill. 👏";else if(pct>=50)msg="Good effort! Review the notes and try again. 📚";
-      return <div style={S.box}><div style={S.resCard}>
-        <h2 style={{...S.resT,color:topic.color}}>{topic.icon} Quiz Complete</h2>
-        <div style={S.sCirc}><ProgressRing percent={pct} size={120} stroke={8} color={topic.color}/><div style={S.sOver}><span style={S.sNum}>{pct}%</span></div></div>
-        <p style={S.sDetail}>{cor} out of {qs.length} correct</p>
-        <p style={S.sMsg}>{msg}</p>
-        <div style={S.resActs}>
-          <button onClick={onRetry} style={{...S.bp,background:topic.color,flex:"none",padding:"12px 24px"}}>🔄 Retry Quiz</button>
-          <button onClick={onHome} style={{...S.bs,flex:"none",padding:"12px 24px",borderColor:"var(--border)",color:"var(--text)"}}>🏠 Home</button>
-        </div>
-        <button onClick={()=>setSr(!sr)} style={{...S.revTog,color:topic.color}}>{sr?"Hide Review ▲":"Review Answers ▼"}</button>
-        {sr&&<div style={S.revList}>{qs.map((q,i)=>{const w=ans[i]===q.answer;return <div key={i} style={{...S.revItem,borderLeft:`4px solid ${w?"#2E7D32":"#C62828"}`}}>
-          <div style={S.revQ}><span style={{...S.revBadge,background:w?"#E8F5E9":"#FFEBEE",color:w?"#2E7D32":"#C62828"}}>{w?"✓":"✕"} Q{i+1}</span><span style={S.revQT}>{q.q}</span></div>
-          {!w&&<div style={S.revA}><div style={{color:"#C62828",fontSize:"0.85rem"}}>Your answer: {q.options[ans[i]]}</div><div style={{color:"#2E7D32",fontSize:"0.85rem",fontWeight:600}}>Correct: {q.options[q.answer]}</div></div>}
-          <p style={S.revE}>{q.explanation}</p>
-        </div>;})}</div>}
-      </div></div>;
-    }
-
-    // ── App ──
-    function App(){
-      const [view,setView]=useState("home");
-      const [topic,setTopic]=useState(null);
-      const [qs,setQs]=useState(null);
-      const goHome=()=>{setView("home");setTopic(null);setQs(null);};
-      const startQuiz=t=>{
-        const sh=shuffle(t.questions).map(q=>{const oa=q.options[q.answer],so=shuffle(q.options);return{...q,options:so,answer:so.indexOf(oa)};});
-        setQs({topic:t,questions:sh,current:0,answers:[],showExplanation:false});setView("quiz");
-      };
-      return <div style={S.app}>
-        {view==="home"&&<HomeView topics={TOPICS} onStudy={t=>{setTopic(t);setView("study");}} onFlash={t=>{setTopic(t);setView("flash");}} onQuiz={startQuiz}/>}
-        {view==="study"&&topic&&<StudyView topic={topic} onBack={goHome} onQuiz={()=>startQuiz(topic)}/>}
-        {view==="flash"&&topic&&<FlashView topic={topic} onBack={goHome}/>}
-        {view==="quiz"&&qs&&<QuizView state={qs} setState={setQs} onFinish={()=>setView("results")} onBack={goHome}/>}
-        {view==="results"&&qs&&<ResultsView state={qs} onRetry={()=>startQuiz(qs.topic)} onHome={goHome}/>}
-      </div>;
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
   </script>
 </body>
 </html>
