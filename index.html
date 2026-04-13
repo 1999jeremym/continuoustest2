@@ -351,190 +351,210 @@ function QuizView({state,setState,onFinish,onBack}){const{topic,questions:qs,cur
 function ResultsView({state,onRetry,onHome}){const{topic,questions:qs,answers:ans}=state;const cor=ans.filter((a,i)=>a===qs[i].answer).length,pct=Math.round(cor/qs.length*100);const[sr,setSr]=useState(false);let msg="Keep studying 💪";if(pct>=90)msg="Outstanding! 🌟";else if(pct>=70)msg="Great work! 👏";else if(pct>=50)msg="Good effort! 📚";return <div style={S.box}><div style={S.resCard}><h2 style={{...S.resT,color:topic.color}}>{topic.icon} Quiz Complete</h2><div style={S.sCirc}><ProgressRing percent={pct} size={120} stroke={8} color={topic.color}/><div style={S.sOver}><span style={S.sNum}>{pct}%</span></div></div><p style={S.sDetail}>{cor}/{qs.length} correct</p><p style={S.sMsg}>{msg}</p><div style={S.resActs}><button onClick={onRetry} style={{...S.bp,background:topic.color,flex:"none",padding:"12px 24px"}}>🔄 Retry</button><button onClick={onHome} style={{...S.bs,flex:"none",padding:"12px 24px",borderColor:"var(--border)",color:"var(--text)"}}>🏠 Home</button></div><button onClick={()=>setSr(!sr)} style={{...S.revTog,color:topic.color}}>{sr?"Hide Review ▲":"Review Answers ▼"}</button>{sr&&<div style={S.revList}>{qs.map((q,i)=>{const w=ans[i]===q.answer;return <div key={i} style={{...S.revItem,borderLeft:`4px solid ${w?"#4CAF50":"#E53935"}`}}><div style={S.revQ}><span style={{...S.revBadge,background:w?"var(--exp-ok-bg)":"var(--exp-no-bg)",color:w?"var(--exp-ok-text)":"var(--exp-no-text)"}}>{w?"✓":"✕"} Q{i+1}</span><span style={S.revQT}>{q.q}</span></div>{!w&&<div style={S.revA}><div style={{color:"var(--exp-no-text)",fontSize:"0.85rem"}}>Your answer: {q.options[ans[i]]}</div><div style={{color:"var(--exp-ok-text)",fontSize:"0.85rem",fontWeight:600}}>Correct: {q.options[q.answer]}</div></div>}<p style={S.revE}>{q.explanation}</p></div>;})}</div>}</div></div>;}
 
 function MindmapView({topic,onBack}){
-const svgRef=useRef(null);
 const wrapRef=useRef(null);
+const svgRef=useRef(null);
 const [expanded,setExpanded]=useState(new Set());
 const [detail,setDetail]=useState(null);
 const [detailMode,setDetailMode]=useState("summary");
-const [pan,setPan]=useState({x:0,y:0,s:1});
-const dragRef=useRef({active:false,lx:0,ly:0,moved:false});
+const [,forceUpdate]=useState(0);
+const camRef=useRef({x:0,y:0,z:1});
+const dragRef=useRef({active:false,startX:0,startY:0,camStartX:0,camStartY:0,didDrag:false});
 const notes=topic.notes;
-const dark=typeof document!=="undefined"&&document.documentElement.getAttribute("data-theme")==="dark";
 
-const layout=React.useMemo(()=>{
-const cx=1500,cy=1500;
-const nodes=[];const edges=[];
-nodes.push({id:"root",x:cx,y:cy,label:topic.title,type:"root"});
+const setCam=(fn)=>{
+const prev=camRef.current;
+const next=typeof fn==="function"?fn(prev):{...prev,...fn};
+camRef.current=next;
+forceUpdate(n=>n+1);
+};
+
+const nodePositions=React.useMemo(()=>{
+const pos=[];
+pos.push({id:"root",x:0,y:0,type:"root",label:topic.title});
 const n=notes.length;
-const R=600;
+const R=550;
 notes.forEach((sec,i)=>{
 const a=(2*Math.PI*i/n)-Math.PI/2;
-const bx=cx+Math.cos(a)*R;
-const by=cy+Math.sin(a)*R;
-const bid="b"+i;
-nodes.push({id:bid,x:bx,y:by,label:sec.heading,type:"branch",idx:i});
-edges.push({from:"root",to:bid});
+const bx=Math.cos(a)*R;
+const by=Math.sin(a)*R;
+pos.push({id:"b"+i,x:bx,y:by,type:"branch",label:sec.heading,idx:i});
 if(expanded.has(i)){
 const pts=sec.summary;
-const leafR=450;
-const spread=Math.min(Math.PI*0.9,(pts.length-1)*0.38);
-const sa=pts.length===1?a:a-spread/2;
+const leafR=400;
+const totalSpread=Math.min(Math.PI*0.85,(pts.length-1)*0.35);
+const sa=pts.length===1?a:a-totalSpread/2;
 pts.forEach((pt,j)=>{
-const la=pts.length===1?a:sa+spread*j/(pts.length-1);
-const lx=bx+Math.cos(la)*leafR;
-const ly=by+Math.sin(la)*leafR;
-const lid=bid+"l"+j;
-nodes.push({id:lid,x:lx,y:ly,label:pt,type:"leaf",branchIdx:i,leafIdx:j});
-edges.push({from:bid,to:lid});
+const la=pts.length===1?a:sa+totalSpread*j/(pts.length-1);
+pos.push({id:"b"+i+"l"+j,x:bx+Math.cos(la)*leafR,y:by+Math.sin(la)*leafR,type:"leaf",label:pt,branchIdx:i,leafIdx:j});
 });
 }
 });
-return{nodes,edges};
+return pos;
 },[notes,expanded,topic.title]);
 
-const nodeMap=React.useMemo(()=>{const m={};layout.nodes.forEach(n=>m[n.id]=n);return m;},[layout]);
+const edges=React.useMemo(()=>{
+const e=[];
+const map={};nodePositions.forEach(n=>map[n.id]=n);
+nodePositions.forEach(nd=>{
+if(nd.type==="branch")e.push({from:map["root"],to:nd});
+if(nd.type==="leaf")e.push({from:map["b"+nd.branchIdx],to:nd});
+});
+return e;
+},[nodePositions]);
 
-const openDetail=(branchIdx,leafIdx)=>{
-const sec=notes[branchIdx];
-const mode=detailMode;
-const content=mode==="detailed"&&sec.detailed?sec.detailed:sec.summary;
-setDetail({heading:sec.heading,branchIdx,leafIdx:leafIdx!=null?leafIdx:null,summary:sec.summary,detailed:sec.detailed||sec.summary,images:sec.images||[]});
-};
-
-const handleNodeClick=(nd,e)=>{
-if(dragRef.current.moved)return;
-e.stopPropagation();
+const onNodeClick=(nd)=>{
 if(nd.type==="root")return;
 if(nd.type==="branch"){
-setExpanded(prev=>{const s=new Set(prev);if(s.has(nd.idx))s.delete(nd.idx);else s.add(nd.idx);return s;});
+setExpanded(prev=>{const s=new Set(prev);s.has(nd.idx)?s.delete(nd.idx):s.add(nd.idx);return s;});
+const sec=notes[nd.idx];
+setDetail({heading:sec.heading,branchIdx:nd.idx,leafIdx:null,summary:sec.summary,detailed:sec.detailed||sec.summary,images:sec.images||[]});
 }
-if(nd.type==="branch")openDetail(nd.idx,null);
-if(nd.type==="leaf")openDetail(nd.branchIdx,nd.leafIdx);
+if(nd.type==="leaf"){
+const sec=notes[nd.branchIdx];
+setDetail({heading:sec.heading,branchIdx:nd.branchIdx,leafIdx:nd.leafIdx,summary:sec.summary,detailed:sec.detailed||sec.summary,images:sec.images||[]});
+}
 };
 
-const handlePointerDown=e=>{
-if(e.target.closest(".mm-node"))return;
-dragRef.current={active:true,lx:e.clientX,ly:e.clientY,moved:false};
-wrapRef.current.setPointerCapture(e.pointerId);
-};
-const handlePointerMove=e=>{
-if(!dragRef.current.active)return;
-const dx=e.clientX-dragRef.current.lx;
-const dy=e.clientY-dragRef.current.ly;
-if(Math.abs(dx)>3||Math.abs(dy)>3)dragRef.current.moved=true;
-dragRef.current.lx=e.clientX;dragRef.current.ly=e.clientY;
-setPan(p=>({...p,x:p.x+dx,y:p.y+dy}));
-};
-const handlePointerUp=()=>{dragRef.current.active=false;};
-const handleWheel=e=>{
-e.preventDefault();
-const f=e.deltaY<0?1.15:0.87;
-setPan(p=>({...p,s:Math.max(0.5,Math.min(4,p.s*f))}));
-};
 useEffect(()=>{
 const el=wrapRef.current;if(!el)return;
-const h=e=>handleWheel(e);
-el.addEventListener("wheel",h,{passive:false});
-return()=>el.removeEventListener("wheel",h);
+const onDown=e=>{
+if(e.target.closest("[data-node]"))return;
+dragRef.current={active:true,startX:e.clientX,startY:e.clientY,camStartX:camRef.current.x,camStartY:camRef.current.y,didDrag:false};
+};
+const onMove=e=>{
+const d=dragRef.current;if(!d.active)return;
+const dx=e.clientX-d.startX;
+const dy=e.clientY-d.startY;
+if(!d.didDrag&&Math.abs(dx)<5&&Math.abs(dy)<5)return;
+d.didDrag=true;
+camRef.current={...camRef.current,x:d.camStartX+dx,y:d.camStartY+dy};
+forceUpdate(n=>n+1);
+};
+const onUp=()=>{
+const wasDrag=dragRef.current.didDrag;
+dragRef.current.active=false;
+if(wasDrag)setTimeout(()=>{dragRef.current.didDrag=false;},10);
+else dragRef.current.didDrag=false;
+};
+const onWheel=e=>{
+e.preventDefault();
+const f=e.deltaY<0?1.12:0.89;
+const cur=camRef.current;
+camRef.current={...cur,z:Math.max(0.45,Math.min(3,cur.z*f))};
+forceUpdate(n=>n+1);
+};
+el.addEventListener("mousedown",onDown);
+window.addEventListener("mousemove",onMove);
+window.addEventListener("mouseup",onUp);
+el.addEventListener("wheel",onWheel,{passive:false});
+return()=>{
+el.removeEventListener("mousedown",onDown);
+window.removeEventListener("mousemove",onMove);
+window.removeEventListener("mouseup",onUp);
+el.removeEventListener("wheel",onWheel);
+};
 },[]);
 
-const vb=React.useMemo(()=>{
-if(!layout.nodes.length)return"0 0 3000 3000";
-let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-layout.nodes.forEach(n=>{minX=Math.min(minX,n.x-250);minY=Math.min(minY,n.y-80);maxX=Math.max(maxX,n.x+250);maxY=Math.max(maxY,n.y+80);});
-const pad=200;
-return `${minX-pad} ${minY-pad} ${maxX-minX+pad*2} ${maxY-minY+pad*2}`;
-},[layout]);
-
+const dark=typeof document!=="undefined"&&document.documentElement.getAttribute("data-theme")==="dark";
+const cam=camRef.current;
 const detailContent=detail?(detailMode==="detailed"?detail.detailed:detail.summary):[];
 
-return <div style={{...S.box,maxWidth:900}}>
+const clipEdge=(cx,cy,hw,hh,ang)=>{
+const c=Math.cos(ang),s=Math.sin(ang);
+const r=Math.min(c===0?1e9:Math.abs((hw+6)/c),s===0?1e9:Math.abs((hh+6)/s));
+return{x:cx+c*r,y:cy+s*r};
+};
+
+const getBoxSize=(nd)=>{
+const w=nd.type==="root"?200:nd.type==="branch"?180:220;
+const h=nd.type==="root"?52:nd.type==="branch"?44:60;
+return{w,h};
+};
+
+const wrapText=(label,maxChars)=>{
+const words=label.split(" ");
+const lines=[];let cur="";
+words.forEach(wd=>{
+const test=cur?cur+" "+wd:wd;
+if(test.length>maxChars&&cur){lines.push(cur);cur=wd;}
+else cur=test;
+});
+if(cur)lines.push(cur);
+return lines;
+};
+
+const wW=wrapRef.current?wrapRef.current.clientWidth:800;
+const wH=wrapRef.current?wrapRef.current.clientHeight:600;
+const centerX=wW/2;
+const centerY=wH/2;
+
+return <div style={{...S.box,maxWidth:960}}>
 <nav style={S.nav}>
 <button onClick={onBack} style={S.back}>← Back</button>
 <div style={{display:"flex",gap:8}}>
-<button onClick={()=>setPan(p=>({...p,s:Math.min(4,p.s*1.25)}))} style={{...S.back,padding:"8px 12px"}}>+</button>
-<button onClick={()=>setPan(p=>({...p,s:Math.max(0.5,p.s*0.8)}))} style={{...S.back,padding:"8px 12px"}}>−</button>
-<button onClick={()=>{setPan({x:0,y:0,s:1});setExpanded(new Set());setDetail(null);}} style={{...S.back,padding:"8px 12px"}}>Reset</button>
+<button onClick={()=>setCam(p=>({...p,z:Math.min(3,p.z*1.25)}))} style={{...S.back,padding:"8px 12px"}}>+</button>
+<button onClick={()=>setCam(p=>({...p,z:Math.max(0.45,p.z*0.8)}))} style={{...S.back,padding:"8px 12px"}}>−</button>
+<button onClick={()=>{setCam({x:0,y:0,z:1});setExpanded(new Set());setDetail(null);}} style={{...S.back,padding:"8px 12px"}}>Reset</button>
 </div>
 </nav>
 <div style={S.hdr}><span style={{fontSize:"2.5rem"}}>{topic.icon}</span><div><h1 style={S.hdrT}>{topic.title}</h1><p style={S.hdrS}>Click branches to expand · Click any node for details</p></div></div>
 
-<div ref={wrapRef} style={{position:"relative",width:"100%",height:"70vh",borderRadius:16,background:"var(--surface)",boxShadow:"var(--shadow)",overflow:"hidden",cursor:dragRef.current.active?"grabbing":"grab",touchAction:"none"}} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
-<svg ref={svgRef} viewBox={vb} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",transform:`translate(${pan.x}px,${pan.y}px) scale(${pan.s})`,transformOrigin:"center center",transition:dragRef.current.active?"none":"transform 0.1s ease-out"}}>
-{layout.edges.map((e,ei)=>{
-const f=nodeMap[e.from],t=nodeMap[e.to];if(!f||!t)return null;
+<div ref={wrapRef} style={{position:"relative",width:"100%",height:"70vh",borderRadius:16,background:"var(--surface)",boxShadow:"var(--shadow)",overflow:"hidden",cursor:"grab",userSelect:"none",WebkitUserSelect:"none"}}>
+<svg ref={svgRef} style={{position:"absolute",left:0,top:0,width:"100%",height:"100%",overflow:"visible"}}>
+<g transform={"translate("+( centerX + cam.x )+","+ ( centerY + cam.y ) +") scale("+cam.z+")"}>
+
+{edges.map((e,i)=>{
+const f=e.from,t=e.to;
+const fBox=getBoxSize(f),tBox=getBoxSize(t);
+const ang=Math.atan2(t.y-f.y,t.x-f.x);
+const p1=clipEdge(f.x,f.y,fBox.w/2,fBox.h/2,ang);
+const p2=clipEdge(t.x,t.y,tBox.w/2,tBox.h/2,ang+Math.PI);
+const mx=(p1.x+p2.x)/2-(p2.y-p1.y)*0.08;
+const my=(p1.y+p2.y)/2+(p2.x-p1.x)*0.08;
 const isLeaf=t.type==="leaf";
-const isFromRoot=f.type==="root";
-
-const fWords=f.label.split(" ");let fLines=[];let fl="";
-fWords.forEach(wd=>{const test=fl?fl+" "+wd:wd;if(test.length>(f.type==="leaf"?34:22)&&fl){fLines.push(fl);fl=wd;}else fl=test;});
-if(fl)fLines.push(fl);
-const fFontSize=f.type==="root"?16:f.type==="branch"?13:11.5;
-const fLineH=fFontSize*1.5;
-const fw=f.type==="root"?200:f.type==="branch"?180:220;
-const fh=Math.max(f.type==="root"?52:f.type==="branch"?44:50,fLines.length*fLineH+20);
-
-const tWords=t.label.split(" ");let tLines=[];let tl="";
-tWords.forEach(wd=>{const test=tl?tl+" "+wd:wd;if(test.length>(t.type==="leaf"?34:22)&&tl){tLines.push(tl);tl=wd;}else tl=test;});
-if(tl)tLines.push(tl);
-if(t.type==="leaf"&&tLines.length>3)tLines.splice(2,tLines.length,tLines[2].slice(0,28)+"…");
-const tFontSize=t.type==="root"?16:t.type==="branch"?13:11.5;
-const tLineH=tFontSize*1.5;
-const tw=t.type==="root"?200:t.type==="branch"?180:220;
-const th=Math.max(t.type==="root"?52:t.type==="branch"?44:50,tLines.length*tLineH+20);
-
-const dx=t.x-f.x,dy=t.y-f.y;
-const ang=Math.atan2(dy,dx);
-const fHalfW=fw/2+6,fHalfH=fh/2+6;
-const tHalfW=tw/2+6,tHalfH=th/2+6;
-const clipToBox=(cx,cy,halfW,halfH,angle)=>{
-const cosA=Math.cos(angle),sinA=Math.sin(angle);
-const sx=cosA===0?Infinity:Math.abs(halfW/cosA);
-const sy=sinA===0?Infinity:Math.abs(halfH/sinA);
-const s=Math.min(sx,sy);
-return{x:cx+cosA*s,y:cy+sinA*s};
-};
-const p1=clipToBox(f.x,f.y,fHalfW,fHalfH,ang);
-const p2=clipToBox(t.x,t.y,tHalfW,tHalfH,ang+Math.PI);
-const cpx=p1.x+(p2.x-p1.x)*0.5-(p2.y-p1.y)*0.1;
-const cpy=p1.y+(p2.y-p1.y)*0.5+(p2.x-p1.x)*0.1;
-return <path key={ei} d={`M${p1.x},${p1.y} Q${cpx},${cpy} ${p2.x},${p2.y}`} fill="none" stroke={topic.color} strokeWidth={isLeaf?1.2:2} strokeOpacity={isLeaf?0.25:0.4}/>;
+return <path key={i} d={"M"+p1.x+" "+p1.y+"Q"+mx+" "+my+" "+p2.x+" "+p2.y} fill="none" stroke={topic.color} strokeWidth={isLeaf?1:2} opacity={isLeaf?0.2:0.35}/>;
 })}
-{layout.nodes.map(nd=>{
+
+{nodePositions.map(nd=>{
 const isRoot=nd.type==="root";
 const isBranch=nd.type==="branch";
 const isLeaf=nd.type==="leaf";
-const isActive=detail&&((isBranch&&detail.branchIdx===nd.idx)||(isLeaf&&detail.branchIdx===nd.branchIdx&&detail.leafIdx===nd.leafIdx));
+const isActive=detail&&((isBranch&&detail.branchIdx===nd.idx&&detail.leafIdx===null)||(isLeaf&&detail.branchIdx===nd.branchIdx&&detail.leafIdx===nd.leafIdx));
+const box=getBoxSize(nd);
+var w=box.w,h=box.h;
 
-let w=isRoot?200:isBranch?180:220;
-let h=isRoot?52:isBranch?44:50;
-let bg=isRoot?topic.color:isBranch?(dark?topic.color+"28":topic.color+"14"):(dark?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.03)");
-let stroke=isRoot?"none":isBranch?topic.color+"50":(dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)");
-let txtFill=isRoot?"#fff":isBranch?(dark?"#eee":topic.color):(dark?"#bbb":"#555");
-let fontSize=isRoot?16:isBranch?13:11.5;
-let fontW=isRoot||isBranch?600:400;
-let rx=isRoot?16:12;
+var bg=isRoot?topic.color:isBranch?(dark?topic.color+"28":topic.color+"14"):(dark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.03)");
+var stroke=isRoot?"transparent":isBranch?topic.color+"44":(dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.07)");
+var txtFill=isRoot?"#fff":isBranch?(dark?"#eee":topic.color):(dark?"#ccc":"#444");
+var fontSize=isRoot?16:isBranch?13:11;
+var fontW=isRoot||isBranch?"600":"400";
+var rx=isRoot?16:10;
 if(isActive){stroke=topic.color;bg=isRoot?topic.color:(dark?topic.color+"40":topic.color+"20");}
 
-const lines=[];let line="";const words=nd.label.split(" ");
-words.forEach(wd=>{const t=line?line+" "+wd:wd;if(t.length>(isLeaf?34:22)&&line){lines.push(line);line=wd;}else line=t;});
-if(line)lines.push(line);
-if(isLeaf&&lines.length>3)lines.splice(2,lines.length,lines[2].slice(0,28)+"…");
-const lineH=fontSize*1.5;
-h=Math.max(h,lines.length*lineH+20);
+const maxC=isLeaf?36:24;
+const lines=wrapText(nd.label,maxC);
+if(isLeaf&&lines.length>3){lines.length=3;lines[2]=lines[2].slice(0,30)+"...";}
+const lineH=fontSize*1.45;
+const textBlockH=lines.length*lineH;
+h=Math.max(h,textBlockH+18);
 
-return <g key={nd.id} className="mm-node" style={{cursor:"pointer"}} onClick={(e)=>handleNodeClick(nd,e)}>
-<rect x={nd.x-w/2} y={nd.y-h/2} width={w} height={h} rx={rx} fill={bg} stroke={stroke} strokeWidth={isActive?2:0.8}/>
-{lines.map((l,li)=><text key={li} x={nd.x} y={nd.y - (lines.length-1)*lineH/2 + li*lineH} textAnchor="middle" dominantBaseline="central" fill={txtFill} fontSize={fontSize} fontWeight={fontW} fontFamily="'Outfit',sans-serif">{l}</text>)}
-{isBranch&&<text x={nd.x+w/2-14} y={nd.y-h/2+14} textAnchor="middle" dominantBaseline="central" fill={dark?"rgba(255,255,255,0.4)":topic.color+"80"} fontSize={14} fontWeight={700} fontFamily="'Outfit',sans-serif">{expanded.has(nd.idx)?"−":"+"}</text>}
+return <g key={nd.id} data-node="1" style={{cursor:"pointer"}} onClick={()=>{if(!dragRef.current.didDrag)onNodeClick(nd);}}>
+<rect x={nd.x-w/2} y={nd.y-h/2} width={w} height={h} rx={rx} fill={bg} stroke={stroke} strokeWidth={isActive?2.5:0.8}/>
+{lines.map((l,li)=>{
+const ty=nd.y-(textBlockH/2)+lineH*0.55+li*lineH;
+return <text key={li} x={nd.x} y={ty} textAnchor="middle" dominantBaseline="central" fill={txtFill} fontSize={fontSize} fontWeight={fontW} fontFamily="'Outfit',sans-serif" style={{pointerEvents:"none"}}>{l}</text>;
+})}
+{isBranch&&<text x={nd.x+w/2-12} y={nd.y-h/2+13} textAnchor="middle" dominantBaseline="central" fill={dark?"rgba(255,255,255,0.35)":topic.color+"70"} fontSize={13} fontWeight="700" fontFamily="'Outfit',sans-serif" style={{pointerEvents:"none"}}>{expanded.has(nd.idx)?"\u2212":"+"}</text>}
 </g>;
 })}
+
+</g>
 </svg>
 </div>
 
 <div style={{textAlign:"center",marginTop:10}}><span style={{fontSize:"0.78rem",color:"var(--text-secondary)"}}>Drag to pan · Scroll to zoom · Click any node for detail below</span></div>
 
-{detail&&<div style={{background:"var(--surface)",borderRadius:16,padding:28,boxShadow:"var(--shadow)",marginTop:20,borderTop:`4px solid ${topic.color}`}}>
+{detail&&<div style={{background:"var(--surface)",borderRadius:16,padding:28,boxShadow:"var(--shadow)",marginTop:20,borderTop:"4px solid "+topic.color}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
 <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"1.4rem",fontWeight:400,color:topic.color,flex:1}}>{detail.heading}</h2>
 <button onClick={()=>setDetail(null)} style={{background:"var(--border)",borderRadius:8,padding:"4px 12px",fontSize:"0.8rem",color:"var(--text-secondary)",flexShrink:0}}>✕ Close</button>
